@@ -82,15 +82,39 @@
     </main>
 
     <div class="crossed-sabres" aria-hidden="true">
-      <svg viewBox="0 0 600 60" preserveAspectRatio="xMidYMid meet">
-        <g stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
-          <line x1="40"  y1="50" x2="560" y2="10"/>
-          <line x1="40"  y1="10" x2="560" y2="50"/>
-          <circle cx="40"  cy="50" r="6" fill="currentColor"/>
-          <circle cx="40"  cy="10" r="6" fill="currentColor"/>
-          <circle cx="560" cy="50" r="6" fill="currentColor"/>
-          <circle cx="560" cy="10" r="6" fill="currentColor"/>
-        </g>
+      <svg viewBox="0 0 800 110" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="bladeGrad" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%"   stop-color="#f6f8fb"/>
+            <stop offset="50%"  stop-color="#cdd3de"/>
+            <stop offset="100%" stop-color="#9aa3b1"/>
+          </linearGradient>
+          <symbol id="sabre" viewBox="0 0 720 40">
+            <!-- pommel -->
+            <circle cx="11" cy="20" r="9" fill="currentColor"/>
+            <!-- grip (wrapped handle) -->
+            <rect x="20" y="13" width="44" height="14" rx="2" fill="#5a3f0a" stroke="currentColor" stroke-width="0.7"/>
+            <line x1="28" y1="14" x2="28" y2="26" stroke="currentColor" stroke-width="0.5" opacity="0.6"/>
+            <line x1="36" y1="14" x2="36" y2="26" stroke="currentColor" stroke-width="0.5" opacity="0.6"/>
+            <line x1="44" y1="14" x2="44" y2="26" stroke="currentColor" stroke-width="0.5" opacity="0.6"/>
+            <line x1="52" y1="14" x2="52" y2="26" stroke="currentColor" stroke-width="0.5" opacity="0.6"/>
+            <line x1="60" y1="14" x2="60" y2="26" stroke="currentColor" stroke-width="0.5" opacity="0.6"/>
+            <!-- knuckle-bow guard -->
+            <path d="M66,9 Q78,20 66,31 L80,28 L80,12 Z" fill="currentColor"/>
+            <!-- blade (slightly curved sabre shape, pointed tip) -->
+            <path d="M81,16 Q360,12 670,15 L712,20 L670,25 Q360,28 81,24 Z"
+                  fill="url(#bladeGrad)" stroke="currentColor" stroke-width="0.6"/>
+            <!-- fuller (blood-groove) -->
+            <path d="M120,20 Q360,18 660,20" stroke="currentColor" stroke-width="0.6"
+                  fill="none" opacity="0.5"/>
+          </symbol>
+        </defs>
+        <!-- sabre going bottom-left to upper-right -->
+        <use href="#sabre" width="720" height="40"
+             transform="translate(35 78) rotate(-10)"/>
+        <!-- sabre going bottom-right to upper-left (mirrored) -->
+        <use href="#sabre" width="720" height="40"
+             transform="translate(765 78) scale(-1 1) rotate(-10)"/>
       </svg>
     </div>
 
