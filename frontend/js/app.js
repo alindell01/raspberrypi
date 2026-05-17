@@ -40,7 +40,8 @@ function fmtTime(iso) {
   }
 }
 
-// Always-en-US mm/dd/yyyy. Used for any user-facing date we render.
+// Always-en-US mm/dd/yyyy. Used for full ISO timestamps (with time
+// component) where we want browser-local-zone formatting.
 function fmtDateUS(iso) {
   if (!iso) return '';
   try {
@@ -52,6 +53,15 @@ function fmtDateUS(iso) {
   }
 }
 
+// For bare yyyy-mm-dd dates we rearrange the parts directly; passing
+// them through Date() would interpret as UTC midnight and shift a day
+// in negative-offset zones.
+function isoDateToUS(iso) {
+  const m = (iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return iso || '';
+  return `${m[2]}/${m[3]}/${m[1]}`;
+}
+
 function todayLocal() {
   const d = new Date();
   const y = d.getFullYear();
@@ -60,11 +70,46 @@ function todayLocal() {
   return `${y}-${m}-${day}`;
 }
 
+function todayUS() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${m}/${day}/${d.getFullYear()}`;
+}
+
+// "05/17/2026" → "2026-05-17"; returns '' if input isn't a complete date.
+function usToIso(us) {
+  if (!us) return '';
+  const m = us.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) return '';
+  return `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+}
+
+// As the user types digits, insert slashes so the field reads as mm/dd/yyyy.
+function autoFormatDate(input) {
+  const cursorAtEnd = input.selectionStart === input.value.length;
+  const digits = input.value.replace(/\D/g, '').slice(0, 8);
+  let out = digits.slice(0, 2);
+  if (digits.length >= 3) out += '/' + digits.slice(2, 4);
+  if (digits.length >= 5) out += '/' + digits.slice(4, 8);
+  if (input.value !== out) {
+    input.value = out;
+    if (cursorAtEnd) input.setSelectionRange(out.length, out.length);
+  }
+}
+
 async function loadGames() {
   const league = $('league').value;
-  const date = $('date').value;
+  const dateInput = $('date').value.trim();
+  const date = usToIso(dateInput);
   const sel = $('game');
   sel.innerHTML = '<option>Loading...</option>';
+
+  // Incomplete date field — don't fetch yet.
+  if (dateInput && !date) {
+    sel.innerHTML = '<option value="">Enter a full mm/dd/yyyy date</option>';
+    return;
+  }
 
   const params = new URLSearchParams({ league });
   // When the user picks today, omit the date param so the backend uses
@@ -82,7 +127,7 @@ async function loadGames() {
     const games = await r.json();
     if (!games.length) {
       const whenIso = date || todayLocal();
-      const when = fmtDateUS(whenIso) || whenIso;
+      const when = isoDateToUS(whenIso);
       sel.innerHTML = `<option value="">No ${league.toUpperCase()} games on ${when} — try changing the date</option>`;
       return;
     }
@@ -360,9 +405,11 @@ function stopScoreboard() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  $('date').value = todayLocal();
+  const dateEl = $('date');
+  dateEl.value = todayUS();
   $('league').addEventListener('change', loadGames);
-  $('date').addEventListener('change', loadGames);
+  dateEl.addEventListener('input', () => autoFormatDate(dateEl));
+  dateEl.addEventListener('change', loadGames);
   $('theme').addEventListener('change', () => applyTheme($('league').value));
   $('go').addEventListener('click', () => {
     const id = $('game').value;

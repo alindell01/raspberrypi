@@ -24,7 +24,13 @@
 
       <div class="row">
         <label for="date">Date</label>
-        <input type="date" id="date" lang="en-US">
+        <input type="text"
+               id="date"
+               placeholder="mm/dd/yyyy"
+               inputmode="numeric"
+               autocomplete="off"
+               maxlength="10"
+               pattern="\d{2}/\d{2}/\d{4}">
         <span class="date-hint">mm/dd/yyyy</span>
       </div>
 
