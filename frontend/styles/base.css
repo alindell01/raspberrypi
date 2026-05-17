@@ -572,13 +572,16 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
 .crossed-sabres {
-  height: 6vh;
-  opacity: 0.4;
+  height: 9vh;
   display: flex;
   justify-content: center;
 }
 
-.crossed-sabres svg,
+.crossed-sabres svg {
+  height: 100%;
+  opacity: 0.4;
+}
+
 .crossed-sabres img {
   height: 100%;
   width: auto;
