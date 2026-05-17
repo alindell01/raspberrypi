@@ -1,20 +1,19 @@
-/* Sabres "Slug" era third jersey (2006–2007): red-dominant with
-   black and silver. */
+/* Sabres "Slug" era (modern): gold-dominant with royal blue and black. */
 
 #scoreboard {
   background:
-    radial-gradient(ellipse at 50% 35%, #6e0a1c 0%, #3a0710 55%, #0d0205 100%);
+    radial-gradient(ellipse at 50% 35%, #1a3a6b 0%, #0d1f3f 55%, #020612 100%);
   color: #ffffff;
 }
 
 .ribbon {
-  background: linear-gradient(to bottom, #0d0205 0%, #3a0710 50%, #0d0205 100%);
-  color: #C0C0C0;
-  border-top: 2px solid #C0C0C0;
-  border-bottom: 2px solid #C0C0C0;
+  background: linear-gradient(to bottom, #020612 0%, #0d1f3f 50%, #020612 100%);
+  color: #FFB81C;
+  border-top: 2px solid #FFB81C;
+  border-bottom: 2px solid #FFB81C;
   text-transform: uppercase;
   box-shadow:
-    inset 0 0 24px rgba(192, 192, 192, 0.10),
+    inset 0 0 24px rgba(255, 184, 28, 0.10),
     0 0 6px rgba(255, 255, 255, 0.18);
 }
 
@@ -24,43 +23,43 @@
   color: #ffffff;
   text-shadow:
     0 0 18px rgba(255,255,255,0.30),
-    0 0 36px rgba(216,30,46,0.55);
+    0 0 36px rgba(255,184,28,0.55);
 }
 
-.period { color: #C0C0C0; }
+.period { color: #FFB81C; }
 
 .clock {
-  color: #ffffff;
-  text-shadow: 0 0 14px rgba(216,30,46,0.5);
+  color: #FFB81C;
+  text-shadow: 0 0 14px rgba(255,184,28,0.5);
 }
 
 .status    { color: rgba(255,255,255,0.65); }
 .last-play { color: rgba(255,255,255,0.85); }
 
-.crossed-sabres { color: #C0C0C0; }
+.crossed-sabres { color: #FFB81C; }
 
 .team-record { color: #d8dde2; }
-.team-goalie { color: #C0C0C0; }
+.team-goalie { color: #FFB81C; }
 .team-stats .s .v { color: #ffffff; }
-.team-stats .s .l { color: rgba(255,255,255,0.7); }
+.team-stats .s .l { color: rgba(255,184,28,0.85); }
 
-.team-leader { color: #C0C0C0; }
+.team-leader { color: #FFB81C; }
 .team-leader .lead-player { color: #ffffff; }
-.team-leader .lead-value  { color: #ffffff; }
+.team-leader .lead-value  { color: #FFB81C; }
 
-.arena-banner { border-color: #C0C0C0; }
+.arena-banner { border-color: #FFB81C; }
 .arena-name   { color: #ffffff; }
-.series-badge { color: #C0C0C0; }
+.series-badge { color: #FFB81C; }
 
-.power-play { color: #ffffff; background: rgba(192,192,192,0.10); }
+.power-play { color: #FFB81C; background: rgba(255,184,28,0.08); }
 
 .line-score          { color: #ffffff; }
-.line-score th       { color: #C0C0C0; }
-.line-score td.total { color: #ffffff; }
+.line-score th       { color: #FFB81C; }
+.line-score td.total { color: #FFB81C; }
 
-.celebration svg { color: rgba(255, 255, 255, 0.9); }
+.celebration svg { color: rgba(255, 184, 28, 0.9); }
 @keyframes celebration-flash {
-  0%   { opacity: 0; background: radial-gradient(circle at center, rgba(216,30,46,0) 0%, rgba(216,30,46,0) 100%); }
-  10%  { opacity: 1; background: radial-gradient(circle at center, rgba(216,30,46,0.55) 0%, rgba(192,192,192,0) 70%); }
-  100% { opacity: 0; background: radial-gradient(circle at center, rgba(216,30,46,0) 0%, rgba(216,30,46,0) 100%); }
+  0%   { opacity: 0; background: radial-gradient(circle at center, rgba(255,184,28,0) 0%, rgba(255,184,28,0) 100%); }
+  10%  { opacity: 1; background: radial-gradient(circle at center, rgba(255,184,28,0.55) 0%, rgba(255,184,28,0) 70%); }
+  100% { opacity: 0; background: radial-gradient(circle at center, rgba(255,184,28,0) 0%, rgba(255,184,28,0) 100%); }
 }
