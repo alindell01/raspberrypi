@@ -71,8 +71,18 @@ async def list_games(client: httpx.AsyncClient, date: str | None) -> list[dict]:
 
     raw: list[dict] = []
     if "gamesByDate" in data:
+        # /scoreboard/now returns a window of days. Pin to NHL's "focused"
+        # date so we don't surface last week's games when today has none.
+        focus = data.get("focusedDate")
         for day in data["gamesByDate"]:
+            if focus and day.get("date") != focus:
+                continue
             raw.extend(day.get("games", []))
+        # Fall back to all days if the focused-date filter produced nothing
+        # (shouldn't happen, but don't show a blank picker on a quirky day).
+        if not raw:
+            for day in data["gamesByDate"]:
+                raw.extend(day.get("games", []))
     elif "games" in data:
         raw = data["games"]
     return [_summarize(g) for g in raw]

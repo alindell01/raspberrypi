@@ -69,7 +69,8 @@ async function loadGames() {
     }
     const games = await r.json();
     if (!games.length) {
-      sel.innerHTML = '<option value="">No games scheduled</option>';
+      const when = date || todayLocal();
+      sel.innerHTML = `<option value="">No ${league.toUpperCase()} games on ${when} — try changing the date</option>`;
       return;
     }
     const dates = new Set(games.map(g => (g.start_time || '').slice(0, 10)).filter(Boolean));
