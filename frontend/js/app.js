@@ -4,11 +4,27 @@ const state = {
   league: 'nhl',
   gameId: null,
   pollHandle: null,
+  celebrateHandle: null,
   lastHomeScore: null,
   lastAwayScore: null,
+  lastGoalText: null,
 };
 
 const POLL_MS = 10000;
+
+const THEMES = {
+  sabres:  '/styles/theme-sabres.css',
+  bills:   '/styles/theme-bills.css',
+  generic: '/styles/theme-generic.css',
+};
+
+function applyTheme(name) {
+  const choice = $('theme').value;
+  const effective = choice === 'auto'
+    ? (name === 'nfl' ? 'bills' : 'sabres')
+    : choice;
+  $('theme-css').href = THEMES[effective] || THEMES.sabres;
+}
 
 function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -49,7 +65,7 @@ async function loadGames() {
     sel.innerHTML = games.map(g => {
       const time = fmtTime(g.start_time);
       let tag;
-      if (g.state === 'live') tag = `LIVE  ${g.period_label || ''} ${g.clock || ''}`.trim();
+      if (g.state === 'live') tag = `LIVE ${g.period_label || ''} ${g.clock || ''}`.trim();
       else if (g.state === 'final') tag = 'FINAL';
       else tag = time;
       const score = (g.state === 'live' || g.state === 'final')
@@ -77,6 +93,47 @@ function pulseIfChanged(el, prevKey, newValue) {
     el.classList.remove('pulse');
     void el.offsetWidth;
     el.classList.add('pulse');
+    return true;
+  }
+  return false;
+}
+
+function fireCelebration() {
+  const el = $('celebration');
+  el.classList.remove('fire');
+  void el.offsetWidth;
+  el.classList.add('fire');
+  if (state.celebrateHandle) clearTimeout(state.celebrateHandle);
+  state.celebrateHandle = setTimeout(() => el.classList.remove('fire'), 1800);
+}
+
+function renderSituation(g) {
+  const node = $('situation');
+  if (state.league !== 'nfl' || g.state !== 'live') {
+    node.hidden = true;
+    return;
+  }
+  const sit = g.situation || {};
+  const dd = sit.down_distance || '';
+  if (!dd && !sit.yardline) {
+    node.hidden = true;
+    return;
+  }
+  node.hidden = false;
+  $('down-distance').textContent = dd || '—';
+  $('yardline').textContent = sit.yardline || '';
+
+  const left = $('poss-arrow-left');
+  const right = $('poss-arrow-right');
+  left.classList.remove('active');
+  right.classList.remove('active');
+  const possId = String(sit.possession || '');
+  // away on the left, home on the right in our layout
+  if (possId && String(g.away.id || '') === possId) left.classList.add('active');
+  else if (possId && String(g.home.id || '') === possId) right.classList.add('active');
+  else {
+    // ESPN gives team id we don't carry through; fall back to indicating "possession" exists
+    if (possId) right.classList.add('active');
   }
 }
 
@@ -92,28 +149,29 @@ async function refreshScoreboard() {
 
     $('home-score').textContent = g.home.score ?? 0;
     $('away-score').textContent = g.away.score ?? 0;
-    pulseIfChanged($('home-score'), 'lastHomeScore', g.home.score ?? 0);
-    pulseIfChanged($('away-score'), 'lastAwayScore', g.away.score ?? 0);
+    const homeChanged = pulseIfChanged($('home-score'), 'lastHomeScore', g.home.score ?? 0);
+    const awayChanged = pulseIfChanged($('away-score'), 'lastAwayScore', g.away.score ?? 0);
+    if ((homeChanged || awayChanged) && g.state === 'live') fireCelebration();
 
     const homeLogo = $('home-logo');
     const awayLogo = $('away-logo');
     if (g.home.logo && homeLogo.src !== g.home.logo) homeLogo.src = g.home.logo;
     if (g.away.logo && awayLogo.src !== g.away.logo) awayLogo.src = g.away.logo;
 
-    $('period').textContent = g.period_label || (g.state === 'pre' ? 'PUCK DROP' : '');
+    $('period').textContent = g.period_label || (g.state === 'pre' ? (state.league === 'nfl' ? 'KICKOFF' : 'PUCK DROP') : '');
     $('clock').textContent = renderClock(g);
     $('status').textContent = g.venue || '';
 
     if (state.league === 'nhl') {
       $('home-extra').textContent = `SOG ${g.home.shots ?? 0}`;
       $('away-extra').textContent = `SOG ${g.away.shots ?? 0}`;
-      $('last-play').textContent = '';
+      $('last-play').textContent = g.last_penalty || '';
+      $('situation').hidden = true;
     } else {
       $('home-extra').textContent = g.home.record || '';
       $('away-extra').textContent = g.away.record || '';
-      const sit = g.situation || {};
-      $('last-play').textContent = [sit.down_distance, sit.yardline].filter(Boolean).join(' — ')
-        || sit.last_play || '';
+      $('last-play').textContent = (g.situation && g.situation.last_play) || '';
+      renderSituation(g);
     }
 
     $('ribbon-top-text').textContent =
@@ -122,9 +180,14 @@ async function refreshScoreboard() {
       `${g.period_label ? ' · ' + g.period_label : ''}` +
       `${g.clock ? ' ' + g.clock : ''}`;
 
-    $('ribbon-bottom-text').textContent =
-      `${state.league.toUpperCase()} live · ${new Date().toLocaleTimeString()} · ` +
-      `${g.away.abbrev} ${g.away.score ?? 0} - ${g.home.score ?? 0} ${g.home.abbrev}`;
+    const tickerBits = [];
+    tickerBits.push(`${g.away.abbrev} ${g.away.score ?? 0} - ${g.home.score ?? 0} ${g.home.abbrev}`);
+    if (g.last_goal) {
+      tickerBits.push(g.last_goal);
+      state.lastGoalText = g.last_goal;
+    }
+    tickerBits.push(state.league.toUpperCase() + ' live · ' + new Date().toLocaleTimeString());
+    $('ribbon-bottom-text').textContent = tickerBits.join('   ·   ');
   } catch (err) {
     console.error('refreshScoreboard failed', err);
   }
@@ -135,6 +198,8 @@ function startScoreboard(gameId, league) {
   state.league = league;
   state.lastHomeScore = null;
   state.lastAwayScore = null;
+  state.lastGoalText = null;
+  applyTheme(league);
   showView('scoreboard');
   refreshScoreboard();
   if (state.pollHandle) clearInterval(state.pollHandle);
@@ -155,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('date').value = new Date().toISOString().slice(0, 10);
   $('league').addEventListener('change', loadGames);
   $('date').addEventListener('change', loadGames);
+  $('theme').addEventListener('change', () => applyTheme($('league').value));
   $('go').addEventListener('click', () => {
     const id = $('game').value;
     const league = $('league').value;

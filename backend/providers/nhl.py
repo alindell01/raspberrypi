@@ -1,4 +1,5 @@
 from typing import Any
+import asyncio
 
 import httpx
 
@@ -77,8 +78,69 @@ async def list_games(client: httpx.AsyncClient, date: str | None) -> list[dict]:
     return [_summarize(g) for g in raw]
 
 
+def _initials(first: Any, last: Any) -> str:
+    first = _name(first)
+    last = _name(last)
+    if first and last:
+        return f"{first[0]}. {last}"
+    return last or first or ""
+
+
+def _extract_last_goal(landing: dict) -> str | None:
+    scoring = (landing.get("summary") or {}).get("scoring") or []
+    for period in reversed(scoring):
+        goals = period.get("goals") or []
+        for goal in reversed(goals):
+            scorer = _initials(goal.get("firstName"), goal.get("lastName"))
+            team_abbrev = goal.get("teamAbbrev")
+            team = _name(team_abbrev) if isinstance(team_abbrev, dict) else (team_abbrev or "")
+            total = goal.get("goalsToDate")
+            assists = goal.get("assists") or []
+            names = [
+                _initials(a.get("firstName"), a.get("lastName"))
+                for a in assists
+                if _initials(a.get("firstName"), a.get("lastName"))
+            ]
+            head = f"{team} GOAL" if team else "GOAL"
+            scorer_part = f"{scorer} ({total})" if total else scorer
+            assist_part = f" — A: {', '.join(names)}" if names else " (unassisted)"
+            return f"{head}: {scorer_part}{assist_part}".strip()
+    return None
+
+
+def _extract_last_penalty(landing: dict) -> str | None:
+    pens = (landing.get("summary") or {}).get("penalties") or []
+    for period in reversed(pens):
+        items = period.get("penalties") or []
+        for p in reversed(items):
+            committed = _initials(p.get("committedByPlayer", {}).get("firstName"),
+                                  p.get("committedByPlayer", {}).get("lastName"))
+            team_abbrev = p.get("teamAbbrev")
+            team = _name(team_abbrev) if isinstance(team_abbrev, dict) else (team_abbrev or "")
+            duration = p.get("duration") or p.get("durationMinutes")
+            desc = _name(p.get("descKey")) or p.get("type") or "penalty"
+            return f"{team} PENALTY: {committed} — {desc} ({duration}m)".strip()
+    return None
+
+
 async def get_game(client: httpx.AsyncClient, game_id: str) -> dict:
-    url = f"{BASE}/gamecenter/{game_id}/boxscore"
-    r = await client.get(url)
-    r.raise_for_status()
-    return _summarize(r.json())
+    box_url = f"{BASE}/gamecenter/{game_id}/boxscore"
+    landing_url = f"{BASE}/gamecenter/{game_id}/landing"
+    box_r, landing_r = await asyncio.gather(
+        client.get(box_url),
+        client.get(landing_url),
+        return_exceptions=True,
+    )
+    if isinstance(box_r, Exception):
+        raise box_r
+    box_r.raise_for_status()
+    game = _summarize(box_r.json())
+
+    if not isinstance(landing_r, Exception) and landing_r.status_code == 200:
+        try:
+            landing = landing_r.json()
+            game["last_goal"] = _extract_last_goal(landing)
+            game["last_penalty"] = _extract_last_penalty(landing)
+        except Exception:
+            pass
+    return game

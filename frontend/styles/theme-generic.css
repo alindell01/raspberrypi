@@ -1,0 +1,32 @@
+/* Neutral dark theme. */
+
+#scoreboard {
+  background:
+    radial-gradient(ellipse at 50% 40%, #1a1a1a 0%, #0a0a0a 55%, #000 100%);
+  color: #ffffff;
+}
+
+.ribbon {
+  background: linear-gradient(to bottom, #000 0%, #161616 50%, #000 100%);
+  color: #d4d4d4;
+  border-top: 2px solid #444;
+  border-bottom: 2px solid #444;
+  text-transform: uppercase;
+}
+
+.team-score {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255,255,255,0.25);
+}
+
+.clock {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+.status { color: rgba(255,255,255,0.55); }
+.last-play { color: rgba(255,255,255,0.75); }
+.team-extra { color: #c9c9c9; }
+
+.situation .down-distance { color: #ffffff; }
+.celebration svg { color: rgba(255, 255, 255, 0.8); }

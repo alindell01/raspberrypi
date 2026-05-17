@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pi Scoreboard</title>
   <link rel="stylesheet" href="/styles/base.css">
-  <link rel="stylesheet" href="/styles/theme-sabres.css">
+  <link rel="stylesheet" id="theme-css" href="/styles/theme-sabres.css">
 </head>
 <body>
 
@@ -32,6 +32,16 @@
         <select id="game"><option>Loading...</option></select>
       </div>
 
+      <div class="row">
+        <label for="theme">Theme</label>
+        <select id="theme">
+          <option value="auto">Auto (by league)</option>
+          <option value="sabres">Sabres / KeyBank</option>
+          <option value="bills">Bills / Highmark</option>
+          <option value="generic">Generic dark</option>
+        </select>
+      </div>
+
       <button id="go">Show Scoreboard</button>
       <p class="hint">Press Esc or B on the scoreboard to return here.</p>
     </div>
@@ -53,6 +63,12 @@
       <div class="center">
         <div class="period" id="period">--</div>
         <div class="clock" id="clock">--:--</div>
+        <div class="situation" id="situation" hidden>
+          <span class="poss-arrow" id="poss-arrow-left">&#9664;</span>
+          <span class="down-distance" id="down-distance"></span>
+          <span class="poss-arrow" id="poss-arrow-right">&#9654;</span>
+          <div class="yardline" id="yardline"></div>
+        </div>
         <div class="status" id="status"></div>
         <div class="last-play" id="last-play"></div>
       </div>
@@ -80,6 +96,18 @@
 
     <div class="ribbon ribbon-bottom">
       <div class="ribbon-track" id="ribbon-bottom-text">Live</div>
+    </div>
+
+    <div class="celebration" id="celebration" aria-hidden="true">
+      <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+        <g fill="currentColor">
+          <circle class="puff" cx="100" cy="100" r="20"/>
+          <circle class="puff puff-2" cx="70"  cy="110" r="14"/>
+          <circle class="puff puff-3" cx="130" cy="110" r="14"/>
+          <circle class="puff puff-4" cx="85"  cy="80"  r="10"/>
+          <circle class="puff puff-5" cx="115" cy="80"  r="10"/>
+        </g>
+      </svg>
     </div>
 
     <button class="back-btn" id="back" title="Back (Esc)">&larr; Back</button>

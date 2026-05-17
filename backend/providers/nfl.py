@@ -12,6 +12,7 @@ def _team(competitor: dict) -> dict:
     logos = team.get("logos") or []
     logo = team.get("logo") or (logos[0].get("href") if logos else "")
     return {
+        "id": str(team.get("id", "")),
         "name": team.get("displayName") or team.get("name") or team.get("abbreviation", ""),
         "abbrev": team.get("abbreviation", ""),
         "logo": logo,
