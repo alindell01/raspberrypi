@@ -40,6 +40,14 @@ function fmtTime(iso) {
   }
 }
 
+function todayLocal() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 async function loadGames() {
   const league = $('league').value;
   const date = $('date').value;
@@ -47,7 +55,9 @@ async function loadGames() {
   sel.innerHTML = '<option>Loading...</option>';
 
   const params = new URLSearchParams({ league });
-  if (date) params.set('date', date);
+  // When the user picks today, omit the date param so the backend uses
+  // NHL/ESPN "now" endpoints, which handle the league's own timezone math.
+  if (date && date !== todayLocal()) params.set('date', date);
 
   try {
     const r = await fetch(`/api/games?${params}`);
@@ -62,6 +72,8 @@ async function loadGames() {
       sel.innerHTML = '<option value="">No games scheduled</option>';
       return;
     }
+    const dates = new Set(games.map(g => (g.start_time || '').slice(0, 10)).filter(Boolean));
+    const showDate = dates.size > 1;
     sel.innerHTML = games.map(g => {
       const time = fmtTime(g.start_time);
       let tag;
@@ -71,7 +83,10 @@ async function loadGames() {
       const score = (g.state === 'live' || g.state === 'final')
         ? `  ${g.away.score}-${g.home.score}`
         : '';
-      return `<option value="${g.id}">${g.away.abbrev} @ ${g.home.abbrev} — ${tag}${score}</option>`;
+      const datePrefix = showDate && g.start_time
+        ? new Date(g.start_time).toLocaleDateString([], { weekday: 'short', month: 'numeric', day: 'numeric' }) + ' '
+        : '';
+      return `<option value="${g.id}">${datePrefix}${g.away.abbrev} @ ${g.home.abbrev} — ${tag}${score}</option>`;
     }).join('');
   } catch (err) {
     console.error('loadGames failed', err);
@@ -217,7 +232,7 @@ function stopScoreboard() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  $('date').value = new Date().toISOString().slice(0, 10);
+  $('date').value = todayLocal();
   $('league').addEventListener('change', loadGames);
   $('date').addEventListener('change', loadGames);
   $('theme').addEventListener('change', () => applyTheme($('league').value));
