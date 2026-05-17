@@ -17,9 +17,11 @@ const state = {
 const POLL_MS = 10000;
 
 const THEMES = {
-  sabres:  '/styles/theme-sabres.css',
-  bills:   '/styles/theme-bills.css',
-  generic: '/styles/theme-generic.css',
+  sabres:   '/styles/theme-sabres.css',
+  goathead: '/styles/theme-goathead.css',
+  slug:     '/styles/theme-slug.css',
+  bills:    '/styles/theme-bills.css',
+  generic:  '/styles/theme-generic.css',
 };
 
 function applyTheme(name) {

@@ -257,20 +257,28 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   to   { transform: translateX(-100%); }
 }
 
+/* 5 columns mimicking the jumbotron side panels:
+   [away stat rail][away team][center][home team][home stat rail].
+   Stats hug the outer page edges, scores hug the centre. */
 .board {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1.1fr 1fr;
+  grid-template-columns:
+    minmax(11vw, 13vw)
+    1fr
+    1.2fr
+    1fr
+    minmax(11vw, 13vw);
   align-items: center;
-  padding: 2vh 4vw;
-  gap: 2vw;
+  padding: 2vh 2vw;
+  gap: 1.5vw;
 }
 
 .team {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.1vh;
+  gap: 1vh;
 }
 
 .team-logo {
@@ -295,22 +303,8 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   text-align: center;
 }
 
-/* Body row sits the vertical stats column next to the big score.
-   Away: [stats][SCORE].  Home: [SCORE][stats] — so the stat columns
-   are on the outside and the scores hug the centre, matching the
-   in-arena bottom strip. */
-.team-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.2vw;
-  width: 100%;
-}
-
-.team-home .team-body { flex-direction: row-reverse; }
-
 .team-score {
-  font-size: 14vh;
+  font-size: 18vh;
   font-weight: 900;
   line-height: 0.9;
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
@@ -346,35 +340,43 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   opacity: 0.7;
 }
 
-/* Vertical stats bars flanking each team's score, jumbotron-style.
-   Each row is [label]    [value-right-aligned]. */
-.team-stats {
+/* Full-height stat rail running down the outer edges of the board,
+   matching the way the in-arena jumbotron side panels are stacked
+   top-to-bottom. */
+.team-stats.stat-rail {
   display: flex;
   flex-direction: column;
-  gap: 0.5vh;
-  min-width: 9vw;
+  justify-content: center;
+  gap: 1.6vh;
+  padding: 3vh 0.5vw;
+  height: 100%;
+  align-self: stretch;
 }
 
-.team-stats .s {
+.team-stats.stat-rail .s {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 0.8vw;
+  gap: 0.5vw;
   align-items: baseline;
   line-height: 1.1;
+  padding-bottom: 1.4vh;
+  border-bottom: 0.15vh solid currentColor;
 }
 
-.team-stats .s .l {
-  font-size: 1.5vh;
-  letter-spacing: 0.06em;
-  opacity: 0.55;
+.team-stats.stat-rail .s:last-child { border-bottom: 0; }
+
+.team-stats.stat-rail .s .l {
+  font-size: 1.7vh;
+  letter-spacing: 0.08em;
+  opacity: 0.65;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
 }
 
-.team-stats .s .v {
-  font-size: 2.4vh;
-  font-weight: 800;
+.team-stats.stat-rail .s .v {
+  font-size: 3.4vh;
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "zero" 0;
   text-align: right;

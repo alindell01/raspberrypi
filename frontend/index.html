@@ -65,7 +65,9 @@
         <label for="theme">Theme</label>
         <select id="theme">
           <option value="auto">Auto (by league)</option>
-          <option value="sabres">Sabres / KeyBank</option>
+          <option value="sabres">Sabres / KeyBank (royal &amp; gold)</option>
+          <option value="goathead">Sabres Goathead (black &amp; red)</option>
+          <option value="slug">Sabres Slug (red &amp; silver)</option>
           <option value="bills">Bills / Highmark</option>
           <option value="generic">Generic dark</option>
         </select>
@@ -107,14 +109,13 @@
     </div>
 
     <main class="board">
+      <div class="team-stats stat-rail" id="away-stats" hidden></div>
+
       <div class="team team-away">
         <div class="team-logo"><img id="away-logo" alt=""></div>
         <div class="team-name" id="away-name">Away</div>
         <div class="team-record" id="away-record"></div>
-        <div class="team-body">
-          <div class="team-stats" id="away-stats" hidden></div>
-          <div class="team-score" id="away-score">0</div>
-        </div>
+        <div class="team-score" id="away-score">0</div>
         <div class="team-leader" id="away-leader" hidden></div>
         <div class="team-goalie" id="away-goalie" hidden></div>
       </div>
@@ -142,13 +143,12 @@
         <div class="team-logo"><img id="home-logo" alt=""></div>
         <div class="team-name" id="home-name">Home</div>
         <div class="team-record" id="home-record"></div>
-        <div class="team-body">
-          <div class="team-score" id="home-score">0</div>
-          <div class="team-stats" id="home-stats" hidden></div>
-        </div>
+        <div class="team-score" id="home-score">0</div>
         <div class="team-leader" id="home-leader" hidden></div>
         <div class="team-goalie" id="home-goalie" hidden></div>
       </div>
+
+      <div class="team-stats stat-rail" id="home-stats" hidden></div>
     </main>
 
     <div class="crossed-sabres" aria-hidden="true">

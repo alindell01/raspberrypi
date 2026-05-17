@@ -1,0 +1,66 @@
+/* Sabres "Slug" era third jersey (2006–2007): red-dominant with
+   black and silver. */
+
+#scoreboard {
+  background:
+    radial-gradient(ellipse at 50% 35%, #6e0a1c 0%, #3a0710 55%, #0d0205 100%);
+  color: #ffffff;
+}
+
+.ribbon {
+  background: linear-gradient(to bottom, #0d0205 0%, #3a0710 50%, #0d0205 100%);
+  color: #C0C0C0;
+  border-top: 2px solid #C0C0C0;
+  border-bottom: 2px solid #C0C0C0;
+  text-transform: uppercase;
+  box-shadow:
+    inset 0 0 24px rgba(192, 192, 192, 0.10),
+    0 0 6px rgba(255, 255, 255, 0.18);
+}
+
+.team-name { color: #ffffff; }
+
+.team-score {
+  color: #ffffff;
+  text-shadow:
+    0 0 18px rgba(255,255,255,0.30),
+    0 0 36px rgba(216,30,46,0.55);
+}
+
+.period { color: #C0C0C0; }
+
+.clock {
+  color: #ffffff;
+  text-shadow: 0 0 14px rgba(216,30,46,0.5);
+}
+
+.status    { color: rgba(255,255,255,0.65); }
+.last-play { color: rgba(255,255,255,0.85); }
+
+.crossed-sabres { color: #C0C0C0; }
+
+.team-record { color: #d8dde2; }
+.team-goalie { color: #C0C0C0; }
+.team-stats .s .v { color: #ffffff; }
+.team-stats .s .l { color: rgba(255,255,255,0.7); }
+
+.team-leader { color: #C0C0C0; }
+.team-leader .lead-player { color: #ffffff; }
+.team-leader .lead-value  { color: #ffffff; }
+
+.arena-banner { border-color: #C0C0C0; }
+.arena-name   { color: #ffffff; }
+.series-badge { color: #C0C0C0; }
+
+.power-play { color: #ffffff; background: rgba(192,192,192,0.10); }
+
+.line-score          { color: #ffffff; }
+.line-score th       { color: #C0C0C0; }
+.line-score td.total { color: #ffffff; }
+
+.celebration svg { color: rgba(255, 255, 255, 0.9); }
+@keyframes celebration-flash {
+  0%   { opacity: 0; background: radial-gradient(circle at center, rgba(216,30,46,0) 0%, rgba(216,30,46,0) 100%); }
+  10%  { opacity: 1; background: radial-gradient(circle at center, rgba(216,30,46,0.55) 0%, rgba(192,192,192,0) 70%); }
+  100% { opacity: 0; background: radial-gradient(circle at center, rgba(216,30,46,0) 0%, rgba(216,30,46,0) 100%); }
+}
