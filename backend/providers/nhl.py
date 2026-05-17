@@ -5,6 +5,13 @@ import httpx
 
 BASE = "https://api-web.nhle.com/v1"
 
+# Static venue → photo map. Add more arenas as we collect official-CDN URLs.
+# The Pi browser fetches these directly; the dev container can't (egress
+# allowlist), but that's fine.
+VENUE_IMAGES: dict[str, str] = {
+    "KeyBank Center": "https://media.d3.nhle.com/image/private/t_ratio16_9-size50/prd/cppi5ukgfjdmtvl4wlra.jpg",
+}
+
 
 def _name(value: Any) -> str:
     if isinstance(value, dict):
@@ -14,12 +21,15 @@ def _name(value: Any) -> str:
 
 def _team(payload: dict, side: str) -> dict:
     t = payload.get(f"{side}Team", {}) or {}
+    record = t.get("record") or ""
     return {
+        "id": str(t.get("id", "")),
         "name": _name(t.get("name")) or _name(t.get("commonName")) or t.get("abbrev", ""),
         "abbrev": t.get("abbrev", ""),
         "logo": t.get("logo", ""),
         "score": t.get("score", 0) or 0,
         "shots": t.get("sog", 0) or 0,
+        "record": record,
     }
 
 
@@ -48,12 +58,14 @@ def _period_label(g: dict) -> str:
 def _summarize(g: dict) -> dict:
     clock = g.get("clock") or {}
     venue = g.get("venue")
+    venue_name = _name(venue)
     return {
         "id": str(g.get("id", "")),
         "league": "nhl",
         "state": _state(g.get("gameState", "")),
         "start_time": g.get("startTimeUTC"),
-        "venue": _name(venue),
+        "venue": venue_name,
+        "venue_image": VENUE_IMAGES.get(venue_name, ""),
         "home": _team(g, "home"),
         "away": _team(g, "away"),
         "period": (g.get("periodDescriptor") or {}).get("number"),
@@ -71,15 +83,11 @@ async def list_games(client: httpx.AsyncClient, date: str | None) -> list[dict]:
 
     raw: list[dict] = []
     if "gamesByDate" in data:
-        # /scoreboard/now returns a window of days. Pin to NHL's "focused"
-        # date so we don't surface last week's games when today has none.
         focus = data.get("focusedDate")
         for day in data["gamesByDate"]:
             if focus and day.get("date") != focus:
                 continue
             raw.extend(day.get("games", []))
-        # Fall back to all days if the focused-date filter produced nothing
-        # (shouldn't happen, but don't show a blank picker on a quirky day).
         if not raw:
             for day in data["gamesByDate"]:
                 raw.extend(day.get("games", []))
@@ -133,24 +141,212 @@ def _extract_last_penalty(landing: dict) -> str | None:
     return None
 
 
+def _extract_series(landing: dict) -> dict | None:
+    """Playoff round / game-of-series info, if present."""
+    s = landing.get("seriesStatus") or {}
+    rnd = s.get("round")
+    game_no = s.get("gameNumberOfSeries") or s.get("gameNumber")
+    if not rnd and not game_no:
+        return None
+    top_wins = s.get("topSeedWins")
+    bot_wins = s.get("bottomSeedWins")
+    top = (s.get("topSeedTeam") or {}).get("abbrev") or ""
+    bot = (s.get("bottomSeedTeam") or {}).get("abbrev") or ""
+    label_parts = []
+    if rnd:
+        label_parts.append(f"ROUND {rnd}")
+    if game_no:
+        label_parts.append(f"GAME {game_no}")
+    out: dict[str, Any] = {"label": " · ".join(label_parts)}
+    if top and bot and top_wins is not None and bot_wins is not None:
+        out["series_score"] = f"{top} {top_wins} – {bot_wins} {bot}"
+    return out
+
+
+def _stat_index(items: list[dict]) -> dict[str, dict]:
+    """Map right-rail teamGameStats list → {category: row}."""
+    return {(it.get("category") or "").lower(): it for it in items or []}
+
+
+def _team_stats_from_right_rail(rr: dict) -> dict:
+    rows = _stat_index((rr or {}).get("teamGameStats") or [])
+
+    def pair(cat: str) -> tuple[Any, Any]:
+        row = rows.get(cat.lower()) or {}
+        return row.get("awayValue"), row.get("homeValue")
+
+    def pct(v: Any) -> str:
+        try:
+            return f"{round(float(v) * 100)}%"
+        except (TypeError, ValueError):
+            return str(v) if v is not None else ""
+
+    sog_a, sog_h = pair("sog")
+    hits_a, hits_h = pair("hits")
+    blocks_a, blocks_h = pair("blockedShots")
+    fo_a, fo_h = pair("faceoffWinningPctg")
+    pp_a, pp_h = pair("powerPlay")          # e.g. "1/3"
+    pim_a, pim_h = pair("pim")
+    give_a, give_h = pair("giveaways")
+    take_a, take_h = pair("takeaways")
+
+    def side(s, h, b, f, p, pi, gi, ta):
+        out: dict[str, str] = {}
+        if s  is not None: out["sog"]      = str(s)
+        if h  is not None: out["hits"]     = str(h)
+        if b  is not None: out["blocks"]   = str(b)
+        if f  is not None: out["fo_pct"]   = pct(f)
+        if p  is not None: out["pp"]       = str(p)
+        if pi is not None: out["pim"]      = str(pi)
+        if gi is not None: out["giveaways"] = str(gi)
+        if ta is not None: out["takeaways"] = str(ta)
+        return out
+
+    return {
+        "away": side(sog_a, hits_a, blocks_a, fo_a, pp_a, pim_a, give_a, take_a),
+        "home": side(sog_h, hits_h, blocks_h, fo_h, pp_h, pim_h, give_h, take_h),
+    }
+
+
+def _line_score_from_right_rail(rr: dict) -> dict | None:
+    ls = (rr or {}).get("linescore") or {}
+    periods = ls.get("byPeriod") or []
+    if not periods:
+        return None
+    cols: list[dict] = []
+    for p in periods:
+        pd = p.get("periodDescriptor") or {}
+        n = pd.get("number")
+        pt = (pd.get("periodType") or "REG").upper()
+        if pt == "OT":
+            label = "OT"
+        elif pt == "SO":
+            label = "SO"
+        else:
+            label = {1: "1", 2: "2", 3: "3"}.get(n, str(n) if n else "?")
+        cols.append({"label": label, "away": p.get("away", 0), "home": p.get("home", 0)})
+    totals = ls.get("totals") or {}
+    return {
+        "periods": cols,
+        "totals": {"away": totals.get("away"), "home": totals.get("home")},
+    }
+
+
+def _power_play_from_boxscore(box: dict) -> dict | None:
+    sit = box.get("situation") or {}
+    if not sit:
+        return None
+    home = sit.get("homeTeam") or {}
+    away = sit.get("awayTeam") or {}
+    h_strength = home.get("strength") or 5
+    a_strength = away.get("strength") or 5
+    # PP team = whichever side has more skaters on the ice.
+    if h_strength > a_strength:
+        pp_team = home.get("abbrev") or box.get("homeTeam", {}).get("abbrev", "")
+        kind = "POWER PLAY"
+    elif a_strength > h_strength:
+        pp_team = away.get("abbrev") or box.get("awayTeam", {}).get("abbrev", "")
+        kind = "POWER PLAY"
+    else:
+        # equal strength — could be 4-on-4 or 3-on-3. Surface that.
+        if h_strength and h_strength < 5:
+            return {
+                "kind": f"{h_strength}-ON-{a_strength}",
+                "team": "",
+                "time_remaining": sit.get("timeRemaining") or "",
+            }
+        return None
+    return {
+        "kind": kind,
+        "team": pp_team,
+        "time_remaining": sit.get("timeRemaining") or "",
+    }
+
+
+def _goalie_from_side(side_stats: dict) -> dict | None:
+    goalies = side_stats.get("goalies") or []
+    if not goalies:
+        return None
+    # Pick the goalie currently in net: prefer one whose TOI is non-zero and
+    # largest; otherwise fall back to the last entry (typical sub-in order).
+    def toi_seconds(g: dict) -> int:
+        toi = g.get("toi") or "0:00"
+        try:
+            m, s = toi.split(":")
+            return int(m) * 60 + int(s)
+        except (ValueError, AttributeError):
+            return 0
+    active = max(goalies, key=toi_seconds) if any(toi_seconds(g) for g in goalies) else goalies[-1]
+    name = _name(active.get("name"))
+    sv_pct = active.get("savePctg") or active.get("savePercentage")
+    saves_line = active.get("saveShotsAgainst") or ""  # "20/22"
+    sv_pct_str = ""
+    if sv_pct not in (None, ""):
+        try:
+            sv_pct_str = f".{round(float(sv_pct) * 1000):03d}"
+        except (TypeError, ValueError):
+            sv_pct_str = str(sv_pct)
+    return {
+        "name": name,
+        "sv_pct": sv_pct_str,
+        "saves": saves_line,
+        "number": active.get("sweaterNumber"),
+    }
+
+
+def _goalies_from_boxscore(box: dict) -> dict:
+    pbg = box.get("playerByGameStats") or {}
+    return {
+        "away": _goalie_from_side(pbg.get("awayTeam") or {}),
+        "home": _goalie_from_side(pbg.get("homeTeam") or {}),
+    }
+
+
 async def get_game(client: httpx.AsyncClient, game_id: str) -> dict:
-    box_url = f"{BASE}/gamecenter/{game_id}/boxscore"
+    box_url     = f"{BASE}/gamecenter/{game_id}/boxscore"
     landing_url = f"{BASE}/gamecenter/{game_id}/landing"
-    box_r, landing_r = await asyncio.gather(
+    rr_url      = f"{BASE}/gamecenter/{game_id}/right-rail"
+
+    box_r, landing_r, rr_r = await asyncio.gather(
         client.get(box_url),
         client.get(landing_url),
+        client.get(rr_url),
         return_exceptions=True,
     )
+
     if isinstance(box_r, Exception):
         raise box_r
     box_r.raise_for_status()
-    game = _summarize(box_r.json())
+    box_json = box_r.json()
+    game = _summarize(box_json)
+
+    pp = _power_play_from_boxscore(box_json)
+    if pp:
+        game["power_play"] = pp
+
+    goalies = _goalies_from_boxscore(box_json)
+    if goalies.get("home") or goalies.get("away"):
+        game["goalies"] = goalies
 
     if not isinstance(landing_r, Exception) and landing_r.status_code == 200:
         try:
             landing = landing_r.json()
-            game["last_goal"] = _extract_last_goal(landing)
+            game["last_goal"]    = _extract_last_goal(landing)
             game["last_penalty"] = _extract_last_penalty(landing)
+            series = _extract_series(landing)
+            if series:
+                game["series"] = series
         except Exception:
             pass
+
+    if not isinstance(rr_r, Exception) and rr_r.status_code == 200:
+        try:
+            rr = rr_r.json()
+            game["team_stats"] = _team_stats_from_right_rail(rr)
+            ls = _line_score_from_right_rail(rr)
+            if ls:
+                game["line_score"] = ls
+        except Exception:
+            pass
+
     return game

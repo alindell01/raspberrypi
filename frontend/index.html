@@ -48,6 +48,14 @@
   </section>
 
   <section id="scoreboard" class="view">
+    <header class="arena-banner" id="arena-banner" hidden>
+      <img id="arena-img" alt="">
+      <div class="arena-overlay">
+        <div class="arena-name" id="arena-name"></div>
+        <div class="series-badge" id="series-badge" hidden></div>
+      </div>
+    </header>
+
     <div class="ribbon ribbon-top">
       <div class="ribbon-track" id="ribbon-top-text">Pi Scoreboard</div>
     </div>
@@ -56,13 +64,21 @@
       <div class="team team-away">
         <div class="team-logo"><img id="away-logo" alt=""></div>
         <div class="team-name" id="away-name">Away</div>
+        <div class="team-record" id="away-record"></div>
         <div class="team-score" id="away-score">0</div>
         <div class="team-extra" id="away-extra"></div>
+        <div class="team-goalie" id="away-goalie" hidden></div>
+        <div class="team-stats" id="away-stats" hidden></div>
       </div>
 
       <div class="center">
         <div class="period" id="period">--</div>
         <div class="clock" id="clock">--:--</div>
+        <div class="power-play" id="power-play" hidden>
+          <span class="pp-kind"  id="pp-kind">POWER PLAY</span>
+          <span class="pp-team"  id="pp-team"></span>
+          <span class="pp-time"  id="pp-time"></span>
+        </div>
         <div class="situation" id="situation" hidden>
           <span class="poss-arrow" id="poss-arrow-left">&#9664;</span>
           <span class="down-distance" id="down-distance"></span>
@@ -71,13 +87,17 @@
         </div>
         <div class="status" id="status"></div>
         <div class="last-play" id="last-play"></div>
+        <table class="line-score" id="line-score" hidden></table>
       </div>
 
       <div class="team team-home">
         <div class="team-logo"><img id="home-logo" alt=""></div>
         <div class="team-name" id="home-name">Home</div>
+        <div class="team-record" id="home-record"></div>
         <div class="team-score" id="home-score">0</div>
         <div class="team-extra" id="home-extra"></div>
+        <div class="team-goalie" id="home-goalie" hidden></div>
+        <div class="team-stats" id="home-stats" hidden></div>
       </div>
     </main>
 

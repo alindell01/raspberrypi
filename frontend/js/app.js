@@ -123,6 +123,111 @@ function fireCelebration() {
   state.celebrateHandle = setTimeout(() => el.classList.remove('fire'), 1800);
 }
 
+function renderArena(g) {
+  const banner = $('arena-banner');
+  const img    = $('arena-img');
+  const name   = $('arena-name');
+  if (!g.venue) {
+    banner.hidden = true;
+    return;
+  }
+  banner.hidden = false;
+  name.textContent = g.venue;
+  if (g.venue_image && img.src !== g.venue_image) {
+    img.src = g.venue_image;
+    img.style.opacity = 1;
+  } else if (!g.venue_image) {
+    img.removeAttribute('src');
+    img.style.opacity = 0;
+  }
+  const badge = $('series-badge');
+  if (g.series && g.series.label) {
+    badge.textContent = g.series.label;
+    badge.hidden = false;
+  } else {
+    badge.hidden = true;
+  }
+}
+
+function renderPowerPlay(g) {
+  const node = $('power-play');
+  const pp = g.power_play;
+  if (!pp || g.state !== 'live') {
+    node.hidden = true;
+    return;
+  }
+  node.hidden = false;
+  $('pp-kind').textContent = pp.kind || 'POWER PLAY';
+  $('pp-team').textContent = pp.team || '';
+  $('pp-time').textContent = pp.time_remaining || '';
+}
+
+function renderLineScore(g) {
+  const node = $('line-score');
+  const ls = g.line_score;
+  if (!ls || !ls.periods || !ls.periods.length) {
+    node.hidden = true;
+    return;
+  }
+  const heads = ls.periods.map(p => `<th>${p.label}</th>`).join('');
+  const aRow  = ls.periods.map(p => `<td>${p.away ?? 0}</td>`).join('');
+  const hRow  = ls.periods.map(p => `<td>${p.home ?? 0}</td>`).join('');
+  const aTot  = (ls.totals && ls.totals.away != null) ? ls.totals.away : (g.away.score ?? 0);
+  const hTot  = (ls.totals && ls.totals.home != null) ? ls.totals.home : (g.home.score ?? 0);
+  node.innerHTML =
+    `<thead><tr><th></th>${heads}<th>T</th></tr></thead>` +
+    `<tbody>` +
+    `<tr><td class="label">${g.away.abbrev || 'A'}</td>${aRow}<td class="total">${aTot}</td></tr>` +
+    `<tr><td class="label">${g.home.abbrev || 'H'}</td>${hRow}<td class="total">${hTot}</td></tr>` +
+    `</tbody>`;
+  node.hidden = false;
+}
+
+const NHL_STAT_ORDER = [
+  ['sog',    'SOG'],
+  ['hits',   'HITS'],
+  ['fo_pct', 'FO%'],
+  ['blocks', 'BLK'],
+];
+const NFL_STAT_ORDER = [
+  ['total_yards', 'YDS'],
+  ['top',         'TOP'],
+  ['turnovers',   'TO'],
+  ['third_down',  '3D'],
+];
+
+function renderTeamStats(g) {
+  const stats = g.team_stats;
+  const order = state.league === 'nhl' ? NHL_STAT_ORDER : NFL_STAT_ORDER;
+  for (const side of ['home', 'away']) {
+    const node = $(`${side}-stats`);
+    const s = stats && stats[side];
+    if (!s || !Object.keys(s).length) { node.hidden = true; continue; }
+    node.innerHTML = order
+      .map(([k, lbl]) => s[k] != null
+        ? `<div class="s"><span class="v">${s[k]}</span><span class="l">${lbl}</span></div>`
+        : '')
+      .filter(Boolean)
+      .join('');
+    node.hidden = !node.innerHTML;
+  }
+}
+
+function renderGoalies(g) {
+  const goalies = g.goalies || {};
+  for (const side of ['home', 'away']) {
+    const node = $(`${side}-goalie`);
+    const gl = goalies[side];
+    if (!gl || !gl.name) { node.hidden = true; continue; }
+    const num   = gl.number != null ? `#${gl.number} ` : '';
+    const saves = gl.saves ? ` ${gl.saves}` : '';
+    const sv    = gl.sv_pct ? ` ${gl.sv_pct}` : '';
+    node.innerHTML =
+      `<span class="g-tag">G</span>${num}${gl.name}${saves}${sv}`;
+    node.hidden = false;
+  }
+}
+
 function renderSituation(g) {
   const node = $('situation');
   if (state.league !== 'nfl' || g.state !== 'live') {
@@ -178,17 +283,26 @@ async function refreshScoreboard() {
     $('clock').textContent = renderClock(g);
     $('status').textContent = g.venue || '';
 
+    $('home-record').textContent = g.home.record || '';
+    $('away-record').textContent = g.away.record || '';
+
     if (state.league === 'nhl') {
       $('home-extra').textContent = `SOG ${g.home.shots ?? 0}`;
       $('away-extra').textContent = `SOG ${g.away.shots ?? 0}`;
       $('last-play').textContent = g.last_penalty || '';
       $('situation').hidden = true;
     } else {
-      $('home-extra').textContent = g.home.record || '';
-      $('away-extra').textContent = g.away.record || '';
+      $('home-extra').textContent = '';
+      $('away-extra').textContent = '';
       $('last-play').textContent = (g.situation && g.situation.last_play) || '';
       renderSituation(g);
     }
+
+    renderArena(g);
+    renderPowerPlay(g);
+    renderLineScore(g);
+    renderTeamStats(g);
+    renderGoalies(g);
 
     $('ribbon-top-text').textContent =
       `${g.away.name || g.away.abbrev} at ${g.home.name || g.home.abbrev}` +

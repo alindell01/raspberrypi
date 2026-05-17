@@ -39,3 +39,28 @@
 .crossed-sabres { color: #FCB514; }
 
 .team-extra { color: #cfd8e8; }
+
+.team-record { color: #cfd8e8; }
+.team-goalie { color: #FCB514; }
+.team-stats .s .v { color: #ffffff; }
+.team-stats .s .l { color: rgba(252,181,20,0.85); }
+
+.arena-banner { border-color: #FCB514; }
+.arena-name   { color: #FCB514; }
+.series-badge { color: #FCB514; }
+
+.power-play { color: #FCB514; background: rgba(252,181,20,0.08); }
+
+.line-score          { color: #ffffff; }
+.line-score th       { color: #FCB514; }
+.line-score td.total { color: #FCB514; }
+
+/* Explicitly override celebration colour so a previously-loaded Bills
+   theme's red can't bleed through (and just in case the browser cached
+   the old stylesheet's @keyframes). */
+.celebration svg { color: rgba(252,181,20,0.9); }
+@keyframes celebration-flash {
+  0%   { opacity: 0; background: radial-gradient(circle at center, rgba(252,181,20,0) 0%, rgba(252,181,20,0) 100%); }
+  10%  { opacity: 1; background: radial-gradient(circle at center, rgba(252,181,20,0.45) 0%, rgba(252,181,20,0) 70%); }
+  100% { opacity: 0; background: radial-gradient(circle at center, rgba(252,181,20,0) 0%, rgba(252,181,20,0) 100%); }
+}

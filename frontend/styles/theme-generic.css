@@ -30,3 +30,23 @@
 
 .situation .down-distance { color: #ffffff; }
 .celebration svg { color: rgba(255, 255, 255, 0.8); }
+@keyframes celebration-flash {
+  0%   { opacity: 0; background: radial-gradient(circle at center, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 100%); }
+  10%  { opacity: 1; background: radial-gradient(circle at center, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 70%); }
+  100% { opacity: 0; background: radial-gradient(circle at center, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 100%); }
+}
+
+.team-record { color: #c9c9c9; }
+.team-goalie { color: #ffffff; }
+.team-stats .s .v { color: #ffffff; }
+.team-stats .s .l { color: rgba(255,255,255,0.6); }
+
+.arena-banner { border-color: #444; }
+.arena-name   { color: #ffffff; }
+.series-badge { color: #ffffff; }
+
+.power-play { color: #ffd84d; background: rgba(255,216,77,0.08); }
+
+.line-score          { color: #ffffff; }
+.line-score th       { color: #ffd84d; }
+.line-score td.total { color: #ffd84d; }

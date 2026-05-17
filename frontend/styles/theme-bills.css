@@ -45,3 +45,18 @@
   10%  { opacity: 1; background: radial-gradient(circle at center, rgba(198,12,48,0.45) 0%, rgba(198,12,48,0) 70%); }
   100% { opacity: 0; background: radial-gradient(circle at center, rgba(198,12,48,0) 0%, rgba(198,12,48,0) 100%); }
 }
+
+.team-record { color: #d8e2f5; }
+.team-goalie { color: #C60C30; }
+.team-stats .s .v { color: #ffffff; }
+.team-stats .s .l { color: rgba(198,12,48,0.85); }
+
+.arena-banner { border-color: #C60C30; }
+.arena-name   { color: #ffffff; }
+.series-badge { color: #C60C30; }
+
+.power-play { color: #C60C30; background: rgba(198,12,48,0.08); }
+
+.line-score          { color: #ffffff; }
+.line-score th       { color: #C60C30; }
+.line-score td.total { color: #C60C30; }
