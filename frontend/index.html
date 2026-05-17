@@ -87,18 +87,21 @@
       </div>
     </header>
 
-    <!-- Inline SVG of a horizontal key, used between "KeyBank" and "Center"
-         in the arena header (referenced from JS). Generic key shape; not
-         the official KeyBank corporate mark. -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
       <defs>
-        <symbol id="kb-key" viewBox="0 0 80 30">
-          <g fill="#C60C30">
-            <circle cx="13" cy="15" r="10" fill="none" stroke="#C60C30" stroke-width="4"/>
-            <circle cx="13" cy="15" r="3"/>
-            <rect x="22" y="13" width="50" height="4"/>
-            <rect x="58" y="17" width="4" height="7"/>
-            <rect x="66" y="17" width="4" height="5"/>
+        <mask id="kb-hole" maskUnits="userSpaceOnUse">
+          <rect x="-100" y="-100" width="500" height="500" fill="white"/>
+          <circle cx="14" cy="15" r="3.5" fill="black"/>
+        </mask>
+        <symbol id="kb-key" viewBox="0 0 100 30">
+          <g fill="#E2061B" mask="url(#kb-hole)">
+            <circle cx="14" cy="7"  r="7"/>
+            <circle cx="14" cy="23" r="7"/>
+            <circle cx="6"  cy="15" r="7"/>
+            <circle cx="22" cy="15" r="7"/>
+            <rect x="20" y="12" width="62" height="6"/>
+            <rect x="70" y="18" width="4"  height="9"/>
+            <rect x="78" y="18" width="4"  height="7"/>
           </g>
         </symbol>
       </defs>
@@ -109,14 +112,16 @@
     </div>
 
     <main class="board">
-      <div class="team-stats stat-rail" id="away-stats" hidden></div>
+      <div class="rail-column" id="away-rail" hidden>
+        <div class="team-stats stat-rail" id="away-stats" hidden></div>
+        <div class="team-leader" id="away-leader" hidden></div>
+      </div>
 
       <div class="team team-away">
         <div class="team-logo"><img id="away-logo" alt=""></div>
         <div class="team-name" id="away-name">Away</div>
         <div class="team-record" id="away-record"></div>
         <div class="team-score" id="away-score">0</div>
-        <div class="team-leader" id="away-leader" hidden></div>
         <div class="team-goalie" id="away-goalie" hidden></div>
       </div>
 
@@ -144,11 +149,13 @@
         <div class="team-name" id="home-name">Home</div>
         <div class="team-record" id="home-record"></div>
         <div class="team-score" id="home-score">0</div>
-        <div class="team-leader" id="home-leader" hidden></div>
         <div class="team-goalie" id="home-goalie" hidden></div>
       </div>
 
-      <div class="team-stats stat-rail" id="home-stats" hidden></div>
+      <div class="rail-column" id="home-rail" hidden>
+        <div class="team-stats stat-rail" id="home-stats" hidden></div>
+        <div class="team-leader" id="home-leader" hidden></div>
+      </div>
     </main>
 
     <div class="crossed-sabres" aria-hidden="true">

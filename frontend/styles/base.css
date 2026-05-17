@@ -340,17 +340,27 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   opacity: 0.7;
 }
 
-/* Full-height stat rail running down the outer edges of the board,
-   matching the way the in-arena jumbotron side panels are stacked
-   top-to-bottom. */
+/* Outer column on each side of the board: stats stacked top-to-bottom
+   with the rotating leader panel underneath, both wrapped by vertical
+   borders to match the framed side panels on the in-arena jumbotron. */
+.rail-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.8vh;
+  height: 100%;
+  padding: 2.5vh 0;
+  align-self: stretch;
+  border-left:  0.25vh solid currentColor;
+  border-right: 0.25vh solid currentColor;
+}
+
 .team-stats.stat-rail {
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 1.6vh;
-  padding: 3vh 0.5vw;
-  height: 100%;
-  align-self: stretch;
+  padding: 0 1.2vw;
 }
 
 .team-stats.stat-rail .s {
@@ -393,7 +403,9 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   100% { color: inherit; text-shadow: 0 0 0 currentColor; transform: scale(1); }
 }
 
-/* Rotating "stat leaders" panel underneath each team's score+stats. */
+/* Rotating "stat leaders" panel sits inside the rail column under
+   the team stats. The rail's outer borders frame both sections, so
+   the leader panel itself only needs a top divider. */
 .team-leader {
   display: grid;
   grid-template-rows: auto auto;
@@ -403,10 +415,14 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   align-items: center;
   justify-items: center;
   min-height: 7vh;
-  padding: 0.6vh 1vw;
-  border: 0.2vh solid currentColor;
-  border-radius: 0.5vh;
-  background: rgba(0, 0, 0, 0.25);
+  margin: 0 1.2vw;
+  padding: 1.4vh 0 0.4vh;
+  border-top: 0.2vh solid currentColor;
+}
+
+.rail-column .team-stats[hidden] + .team-leader {
+  border-top: 0;
+  padding-top: 0.4vh;
 }
 
 .team-leader .lead-label {
@@ -566,56 +582,60 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   height: 100%;
 }
 
-/* Arena banner: image strip with venue name + optional series badge */
+/* Arena banner: centered logo header sitting above the videoboard,
+   mimicking the venue signage that crowns the actual scoreboard
+   structure. Image (if available) sits behind as a soft backdrop. */
 .arena-banner {
   position: relative;
-  height: 11vh;
+  min-height: 9vh;
   width: 100%;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-bottom: 0.3vh solid currentColor;
 }
 
 .arena-banner img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center 35%;
-  filter: brightness(0.5) contrast(1.05);
+  filter: brightness(0.3) contrast(1.05);
+  opacity: 0.5;
+  z-index: 0;
 }
 
 .arena-overlay {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  z-index: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 4vw;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.35) 0%,
-    rgba(0, 0, 0, 0.2)  50%,
-    rgba(0, 0, 0, 0.55) 100%
-  );
+  justify-content: center;
+  gap: 0.6vh;
+  padding: 1.4vh 4vw;
 }
 
-/* The arena name is rendered as inline parts so we can drop the key
-   icon in between "KeyBank" and "Center" — see app.js renderArena(). */
 .arena-name {
   display: flex;
   align-items: center;
-  gap: 0.9vw;
-  font-size: 5vh;
-  font-weight: 400;
-  letter-spacing: 0.02em;
+  gap: 1.2vw;
+  font-size: 5.5vh;
+  font-weight: 800;
+  letter-spacing: -0.005em;
   color: #ffffff;
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  text-shadow: 0 0 18px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0,0,0,0.8);
+  text-shadow: 0 0 18px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0,0,0,0.85);
 }
 
 .arena-name .kb-key {
-  height: 0.9em;
+  height: 0.85em;
   width: auto;
   display: inline-block;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
 }
 
 .series-badge {

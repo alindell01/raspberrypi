@@ -342,7 +342,7 @@ function renderArena(g) {
   if (/^keybank\s+center$/i.test(g.venue.trim())) {
     name.innerHTML =
       `<span>KeyBank</span>` +
-      `<svg class="kb-key" viewBox="0 0 80 30" aria-hidden="true"><use href="#kb-key"/></svg>` +
+      `<svg class="kb-key" viewBox="0 0 100 30" aria-hidden="true"><use href="#kb-key"/></svg>` +
       `<span>Center</span>`;
   } else {
     name.textContent = g.venue;
@@ -513,6 +513,16 @@ function renderTeamStats(g) {
   state.lastStats = next;
 }
 
+function syncRailColumns() {
+  for (const side of ['home', 'away']) {
+    const rail = $(`${side}-rail`);
+    if (!rail) continue;
+    const stats  = $(`${side}-stats`);
+    const leader = $(`${side}-leader`);
+    rail.hidden = (!stats || stats.hidden) && (!leader || leader.hidden);
+  }
+}
+
 function renderGoalies(g) {
   const goalies = g.goalies || {};
   for (const side of ['home', 'away']) {
@@ -598,6 +608,7 @@ async function refreshScoreboard() {
     renderTeamStats(g);
     renderGoalies(g);
     renderLeaders(g);
+    syncRailColumns();
 
     $('ribbon-top-text').textContent =
       `${g.away.name || g.away.abbrev} at ${g.home.name || g.home.abbrev}` +
