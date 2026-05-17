@@ -1,0 +1,41 @@
+/* KeyBank Center–inspired theme: Sabres navy + gold. */
+
+#scoreboard {
+  background:
+    radial-gradient(ellipse at 50% 40%, #0a3270 0%, #002654 55%, #00112b 100%);
+  color: #ffffff;
+}
+
+.ribbon {
+  background: linear-gradient(to bottom, #00112b 0%, #001f4a 50%, #00112b 100%);
+  color: #FCB514;
+  border-top: 2px solid #FCB514;
+  border-bottom: 2px solid #FCB514;
+  text-transform: uppercase;
+  box-shadow:
+    inset 0 0 24px rgba(252, 181, 20, 0.15),
+    0 0 6px rgba(252, 181, 20, 0.25);
+}
+
+.team-name { color: #ffffff; }
+
+.team-score {
+  color: #FCB514;
+  text-shadow:
+    0 0 18px rgba(252,181,20,0.55),
+    0 0 36px rgba(252,181,20,0.25);
+}
+
+.period { color: #ffffff; }
+
+.clock {
+  color: #FCB514;
+  text-shadow: 0 0 14px rgba(252,181,20,0.45);
+}
+
+.status { color: rgba(255,255,255,0.65); }
+.last-play { color: rgba(255,255,255,0.8); }
+
+.crossed-sabres { color: #FCB514; }
+
+.team-extra { color: #cfd8e8; }

@@ -1,0 +1,25 @@
+[Unit]
+Description=Pi Scoreboard Chromium kiosk
+After=graphical.target scoreboard-backend.service
+Wants=scoreboard-backend.service
+
+[Service]
+Type=simple
+User=pi
+Environment=DISPLAY=:0
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/chromium-browser \
+  --kiosk \
+  --noerrdialogs \
+  --disable-infobars \
+  --no-first-run \
+  --autoplay-policy=no-user-gesture-required \
+  --check-for-update-interval=31536000 \
+  --disable-pinch \
+  --overscroll-history-navigation=0 \
+  http://localhost:8000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target
