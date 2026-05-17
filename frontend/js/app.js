@@ -24,6 +24,34 @@ const THEMES = {
   generic:  '/styles/theme-generic.css',
 };
 
+// When the active theme is goathead or slug AND the team is the Sabres,
+// try these local files in order before falling back to the NHL API logo.
+// Drop the files into frontend/assets/sabres/ — see that folder's README.
+const SABRES_THEME_LOGOS = {
+  goathead: ['/assets/sabres/goathead.svg', '/assets/sabres/goathead.png'],
+  slug:     ['/assets/sabres/slug.svg',     '/assets/sabres/slug.png'],
+};
+
+function setTeamLogo(el, team) {
+  const themeChoice = $('theme').value;
+  const isSabres = (team.abbrev || '').toUpperCase() === 'BUF';
+  const overrides = isSabres ? (SABRES_THEME_LOGOS[themeChoice] || []) : [];
+  const apiLogo   = team.logo || '';
+  const tryList   = overrides.concat(apiLogo).filter(Boolean);
+  const cacheKey  = tryList.join('|');
+  if (!tryList.length || el.dataset.lastTry === cacheKey) return;
+  el.dataset.lastTry = cacheKey;
+
+  // Walk the list via onerror — first url that loads wins.
+  let i = 0;
+  const attempt = () => {
+    if (i >= tryList.length) { el.onerror = null; return; }
+    el.onerror = () => { i++; attempt(); };
+    el.src = tryList[i];
+  };
+  attempt();
+}
+
 function applyTheme(name) {
   const choice = $('theme').value;
   const effective = choice === 'auto'
@@ -546,10 +574,8 @@ async function refreshScoreboard() {
     const awayChanged = pulseIfChanged($('away-score'), 'lastAwayScore', g.away.score ?? 0);
     if ((homeChanged || awayChanged) && g.state === 'live') fireCelebration();
 
-    const homeLogo = $('home-logo');
-    const awayLogo = $('away-logo');
-    if (g.home.logo && homeLogo.src !== g.home.logo) homeLogo.src = g.home.logo;
-    if (g.away.logo && awayLogo.src !== g.away.logo) awayLogo.src = g.away.logo;
+    setTeamLogo($('home-logo'), g.home);
+    setTeamLogo($('away-logo'), g.away);
 
     $('period').textContent = g.period_label || (g.state === 'pre' ? (state.league === 'nfl' ? 'KICKOFF' : 'PUCK DROP') : '');
     $('clock').textContent = renderClock(g);
