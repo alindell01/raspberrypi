@@ -85,6 +85,23 @@
       </div>
     </header>
 
+    <!-- Inline SVG of a horizontal key, used between "KeyBank" and "Center"
+         in the arena header (referenced from JS). Generic key shape; not
+         the official KeyBank corporate mark. -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <symbol id="kb-key" viewBox="0 0 80 30">
+          <g fill="#C60C30">
+            <circle cx="13" cy="15" r="10" fill="none" stroke="#C60C30" stroke-width="4"/>
+            <circle cx="13" cy="15" r="3"/>
+            <rect x="22" y="13" width="50" height="4"/>
+            <rect x="58" y="17" width="4" height="7"/>
+            <rect x="66" y="17" width="4" height="5"/>
+          </g>
+        </symbol>
+      </defs>
+    </svg>
+
     <div class="ribbon ribbon-top">
       <div class="ribbon-track" id="ribbon-top-text">Pi Scoreboard</div>
     </div>
@@ -98,6 +115,7 @@
           <div class="team-stats" id="away-stats" hidden></div>
           <div class="team-score" id="away-score">0</div>
         </div>
+        <div class="team-leader" id="away-leader" hidden></div>
         <div class="team-goalie" id="away-goalie" hidden></div>
       </div>
 
@@ -128,6 +146,7 @@
           <div class="team-score" id="home-score">0</div>
           <div class="team-stats" id="home-stats" hidden></div>
         </div>
+        <div class="team-leader" id="home-leader" hidden></div>
         <div class="team-goalie" id="home-goalie" hidden></div>
       </div>
     </main>

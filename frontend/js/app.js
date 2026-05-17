@@ -9,6 +9,9 @@ const state = {
   lastAwayScore: null,
   lastGoalText: null,
   lastStats: {},
+  leaders: null,
+  leaderIdx: 0,
+  leaderRotateHandle: null,
 };
 
 const POLL_MS = 10000;
@@ -302,7 +305,19 @@ function renderArena(g) {
     return;
   }
   banner.hidden = false;
-  name.textContent = g.venue;
+
+  // KeyBank Center gets the signature treatment: "KeyBank [key] Center"
+  // with the inline key SVG between the words. Other venues just show
+  // the name as-is.
+  if (/^keybank\s+center$/i.test(g.venue.trim())) {
+    name.innerHTML =
+      `<span>KeyBank</span>` +
+      `<svg class="kb-key" viewBox="0 0 80 30" aria-hidden="true"><use href="#kb-key"/></svg>` +
+      `<span>Center</span>`;
+  } else {
+    name.textContent = g.venue;
+  }
+
   if (g.venue_image && img.src !== g.venue_image) {
     img.src = g.venue_image;
     img.style.opacity = 1;
@@ -316,6 +331,79 @@ function renderArena(g) {
     badge.hidden = false;
   } else {
     badge.hidden = true;
+  }
+}
+
+/* ---------- Rotating stat-leader panel ---------- */
+
+const LEADER_CATEGORIES = [
+  ['goals',   'GOALS'],
+  ['assists', 'ASSISTS'],
+  ['points',  'POINTS'],
+  ['shots',   'SHOTS'],
+  ['hits',    'HITS'],
+  ['blocks',  'BLOCKS'],
+];
+const LEADER_ROTATE_MS = 5000;
+
+function leaderCategoriesPresent() {
+  const ld = state.leaders;
+  if (!ld) return [];
+  return LEADER_CATEGORIES.filter(([key]) =>
+    (ld.away && ld.away[key]) || (ld.home && ld.home[key])
+  );
+}
+
+function paintLeaders() {
+  const cats = leaderCategoriesPresent();
+  if (!cats.length) return;
+  if (state.leaderIdx >= cats.length) state.leaderIdx = 0;
+  const [key, label] = cats[state.leaderIdx];
+  for (const side of ['home', 'away']) {
+    const node = $(`${side}-leader`);
+    const lead = state.leaders[side] && state.leaders[side][key];
+    if (!lead || !lead.name) {
+      node.innerHTML =
+        `<span class="lead-label">${label} LEADER</span>` +
+        `<span class="lead-player">—</span>` +
+        `<span class="lead-value">0</span>`;
+    } else {
+      const num = lead.number != null ? ` #${lead.number}` : '';
+      node.innerHTML =
+        `<span class="lead-label">${label} LEADER</span>` +
+        `<span class="lead-player">${lead.name}${num}</span>` +
+        `<span class="lead-value">${lead.value}</span>`;
+    }
+    node.classList.remove('lead-flip');
+    void node.offsetWidth;
+    node.classList.add('lead-flip');
+  }
+}
+
+function renderLeaders(g) {
+  state.leaders = g.leaders || null;
+  const cats = leaderCategoriesPresent();
+  const haveAny = cats.length > 0;
+  for (const side of ['home', 'away']) {
+    $(`${side}-leader`).hidden = !haveAny;
+  }
+  if (!haveAny) {
+    if (state.leaderRotateHandle) clearInterval(state.leaderRotateHandle);
+    state.leaderRotateHandle = null;
+    return;
+  }
+  if (!state.leaderRotateHandle) {
+    state.leaderIdx = 0;
+    paintLeaders();
+    state.leaderRotateHandle = setInterval(() => {
+      const c = leaderCategoriesPresent();
+      if (!c.length) return;
+      state.leaderIdx = (state.leaderIdx + 1) % c.length;
+      paintLeaders();
+    }, LEADER_ROTATE_MS);
+  } else {
+    // Already rotating — just keep the current frame in sync with new data.
+    paintLeaders();
   }
 }
 
@@ -481,6 +569,7 @@ async function refreshScoreboard() {
     renderLineScore(g);
     renderTeamStats(g);
     renderGoalies(g);
+    renderLeaders(g);
 
     $('ribbon-top-text').textContent =
       `${g.away.name || g.away.abbrev} at ${g.home.name || g.home.abbrev}` +
@@ -520,6 +609,17 @@ async function refreshScoreboard() {
         }
       }
     }
+    if (g.leaders) {
+      const leadLabels = { goals: 'G', assists: 'A', points: 'PTS', shots: 'SOG', hits: 'HITS', blocks: 'BLK' };
+      for (const side of ['away', 'home']) {
+        const ld = g.leaders[side] || {};
+        for (const [key, lbl] of Object.entries(leadLabels)) {
+          if (ld[key] && ld[key].name) {
+            tickerBits.push(`${g[side].abbrev} ${lbl} LDR: ${ld[key].name} (${ld[key].value})`);
+          }
+        }
+      }
+    }
     if (g.series && g.series.series_score) tickerBits.push(g.series.series_score);
     tickerBits.push(state.league.toUpperCase() + ' live · ' + new Date().toLocaleTimeString('en-US'));
     $('ribbon-bottom-text').textContent = tickerBits.join('   ·   ');
@@ -546,6 +646,11 @@ function stopScoreboard() {
     clearInterval(state.pollHandle);
     state.pollHandle = null;
   }
+  if (state.leaderRotateHandle) {
+    clearInterval(state.leaderRotateHandle);
+    state.leaderRotateHandle = null;
+  }
+  state.leaders = null;
   state.gameId = null;
   showView('picker');
   loadGames();

@@ -40,6 +40,9 @@
 .team-goalie { color: #ffffff; }
 .team-stats .s .v { color: #ffffff; }
 .team-stats .s .l { color: rgba(255,255,255,0.6); }
+.team-leader { color: #ffd84d; }
+.team-leader .lead-player { color: #ffffff; }
+.team-leader .lead-value  { color: #ffd84d; }
 
 .arena-banner { border-color: #444; }
 .arena-name   { color: #ffffff; }

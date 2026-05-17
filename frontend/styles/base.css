@@ -391,6 +391,54 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   100% { color: inherit; text-shadow: 0 0 0 currentColor; transform: scale(1); }
 }
 
+/* Rotating "stat leaders" panel underneath each team's score+stats. */
+.team-leader {
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-template-columns: auto auto;
+  column-gap: 1vw;
+  row-gap: 0.1vh;
+  align-items: center;
+  justify-items: center;
+  min-height: 7vh;
+  padding: 0.6vh 1vw;
+  border: 0.2vh solid currentColor;
+  border-radius: 0.5vh;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.team-leader .lead-label {
+  grid-column: 1 / span 2;
+  font-size: 1.3vh;
+  letter-spacing: 0.14em;
+  opacity: 0.65;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.team-leader .lead-player {
+  font-size: 2vh;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.team-leader .lead-value {
+  font-size: 2.8vh;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 0;
+}
+
+.team-leader.lead-flip {
+  animation: lead-flip 0.55s ease-out;
+}
+
+@keyframes lead-flip {
+  0%   { opacity: 0;   transform: translateY(-0.8vh); }
+  60%  { opacity: 1;   transform: translateY(0); }
+  100% { opacity: 1; }
+}
+
 .center {
   display: flex;
   flex-direction: column;
@@ -519,7 +567,7 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
 /* Arena banner: image strip with venue name + optional series badge */
 .arena-banner {
   position: relative;
-  height: 9vh;
+  height: 11vh;
   width: 100%;
   overflow: hidden;
   border-bottom: 0.3vh solid currentColor;
@@ -530,7 +578,7 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   height: 100%;
   object-fit: cover;
   object-position: center 35%;
-  filter: brightness(0.55) contrast(1.05);
+  filter: brightness(0.5) contrast(1.05);
 }
 
 .arena-overlay {
@@ -541,20 +589,31 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   justify-content: space-between;
   padding: 0 4vw;
   background: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 0.55) 0%,
-    rgba(0, 0, 0, 0.15) 40%,
-    rgba(0, 0, 0, 0.15) 60%,
+    to bottom,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0.2)  50%,
     rgba(0, 0, 0, 0.55) 100%
   );
 }
 
+/* The arena name is rendered as inline parts so we can drop the key
+   icon in between "KeyBank" and "Center" — see app.js renderArena(). */
 .arena-name {
-  font-size: 2.6vh;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  gap: 0.9vw;
+  font-size: 5vh;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  text-shadow: 0 0 18px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0,0,0,0.8);
+}
+
+.arena-name .kb-key {
+  height: 0.9em;
+  width: auto;
+  display: inline-block;
 }
 
 .series-badge {

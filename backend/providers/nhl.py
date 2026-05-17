@@ -302,6 +302,47 @@ def _goalies_from_boxscore(box: dict) -> dict:
     }
 
 
+# Skater stat keys to surface as "leaders". Map UI label → boxscore key.
+_LEADER_CATEGORIES: list[tuple[str, str]] = [
+    ("goals",   "goals"),
+    ("assists", "assists"),
+    ("points",  "points"),
+    ("shots",   "shots"),
+    ("hits",    "hits"),
+    ("blocks",  "blockedShots"),
+]
+
+
+def _leaders_from_side(side_stats: dict) -> dict:
+    skaters = (side_stats.get("forwards") or []) + (side_stats.get("defense") or [])
+    out: dict[str, dict] = {}
+    for label, key in _LEADER_CATEGORIES:
+        best = None
+        best_val = 0
+        for p in skaters:
+            v = p.get(key, 0)
+            if not isinstance(v, (int, float)):
+                continue
+            if v > best_val:
+                best_val = v
+                best = p
+        if best and best_val > 0:
+            out[label] = {
+                "name":   _name(best.get("name")),
+                "number": best.get("sweaterNumber"),
+                "value":  best_val,
+            }
+    return out
+
+
+def _team_leaders(box: dict) -> dict:
+    pbg = box.get("playerByGameStats") or {}
+    return {
+        "away": _leaders_from_side(pbg.get("awayTeam") or {}),
+        "home": _leaders_from_side(pbg.get("homeTeam") or {}),
+    }
+
+
 async def get_game(client: httpx.AsyncClient, game_id: str) -> dict:
     box_url     = f"{BASE}/gamecenter/{game_id}/boxscore"
     landing_url = f"{BASE}/gamecenter/{game_id}/landing"
@@ -327,6 +368,10 @@ async def get_game(client: httpx.AsyncClient, game_id: str) -> dict:
     goalies = _goalies_from_boxscore(box_json)
     if goalies.get("home") or goalies.get("away"):
         game["goalies"] = goalies
+
+    leaders = _team_leaders(box_json)
+    if leaders.get("home") or leaders.get("away"):
+        game["leaders"] = leaders
 
     if not isinstance(landing_r, Exception) and landing_r.status_code == 200:
         try:
