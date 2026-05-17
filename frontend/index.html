@@ -89,20 +89,17 @@
 
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
       <defs>
-        <mask id="kb-hole" maskUnits="userSpaceOnUse">
-          <rect x="-100" y="-100" width="500" height="500" fill="white"/>
-          <circle cx="14" cy="15" r="3.5" fill="black"/>
-        </mask>
         <symbol id="kb-key" viewBox="0 0 100 30">
-          <g fill="#E2061B" mask="url(#kb-hole)">
-            <circle cx="14" cy="7"  r="7"/>
-            <circle cx="14" cy="23" r="7"/>
-            <circle cx="6"  cy="15" r="7"/>
-            <circle cx="22" cy="15" r="7"/>
+          <g fill="#E2061B">
+            <circle cx="14" cy="8"  r="7"/>
+            <circle cx="14" cy="22" r="7"/>
+            <circle cx="7"  cy="15" r="7"/>
+            <circle cx="21" cy="15" r="7"/>
             <rect x="20" y="12" width="62" height="6"/>
             <rect x="70" y="18" width="4"  height="9"/>
             <rect x="78" y="18" width="4"  height="7"/>
           </g>
+          <circle cx="14" cy="15" r="3" fill="#0a0a0a"/>
         </symbol>
       </defs>
     </svg>
@@ -159,7 +156,8 @@
     </main>
 
     <div class="crossed-sabres" aria-hidden="true">
-      <svg viewBox="0 0 800 110" preserveAspectRatio="xMidYMid meet">
+      <img id="crossed-sabres-img" alt="" hidden>
+      <svg id="crossed-sabres-svg" viewBox="0 0 800 110" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="bladeGrad" x1="0" x2="1" y1="0" y2="0">
             <stop offset="0%"   stop-color="#f6f8fb"/>

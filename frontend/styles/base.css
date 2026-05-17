@@ -578,8 +578,11 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   justify-content: center;
 }
 
-.crossed-sabres svg {
+.crossed-sabres svg,
+.crossed-sabres img {
   height: 100%;
+  width: auto;
+  object-fit: contain;
 }
 
 /* Arena banner: centered logo header sitting above the videoboard,

@@ -695,6 +695,24 @@ function stopScoreboard() {
   loadGames();
 }
 
+// Try a user-supplied crossed-sabres image (SVG preferred, PNG fallback)
+// from frontend/assets/sabres/. If either loads, swap it in for the
+// inline SVG. If neither is present, the inline SVG stays as the fallback.
+function initCrossedSabres() {
+  const img = $('crossed-sabres-img');
+  const svg = $('crossed-sabres-svg');
+  if (!img || !svg) return;
+  const tryList = ['/assets/sabres/swords.svg', '/assets/sabres/swords.png'];
+  let i = 0;
+  const attempt = () => {
+    if (i >= tryList.length) { img.onerror = null; return; }
+    img.onerror = () => { i++; attempt(); };
+    img.onload = () => { img.hidden = false; svg.hidden = true; };
+    img.src = tryList[i];
+  };
+  attempt();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const dateEl = $('date');
   dateEl.value = todayUS();
@@ -714,5 +732,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.gameId) stopScoreboard();
     }
   });
+  initCrossedSabres();
   loadGames();
 });
