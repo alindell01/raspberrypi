@@ -98,6 +98,117 @@ function autoFormatDate(input) {
   }
 }
 
+/* ---------- Click-to-pick calendar popup ---------- */
+
+const cal = { year: 0, month: 0 };
+const MONTH_NAMES = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+];
+
+function openDatePopup() {
+  const input = $('date');
+  const iso = usToIso(input.value);
+  const seed = iso ? new Date(iso + 'T12:00:00') : new Date();
+  cal.year  = seed.getFullYear();
+  cal.month = seed.getMonth();
+  renderCalendar();
+  $('date-popup').hidden = false;
+}
+
+function closeDatePopup() { $('date-popup').hidden = true; }
+
+function renderCalendar() {
+  $('cal-month-label').textContent = `${MONTH_NAMES[cal.month]} ${cal.year}`;
+
+  const firstWeekday  = new Date(cal.year, cal.month, 1).getDay();   // 0=Sun
+  const daysInMonth   = new Date(cal.year, cal.month + 1, 0).getDate();
+  const daysInPrev    = new Date(cal.year, cal.month,     0).getDate();
+  const todayIso      = todayLocal();
+  const selectedIso   = usToIso($('date').value);
+
+  let html = '';
+  ['Su','Mo','Tu','We','Th','Fr','Sa']
+    .forEach(d => { html += `<div class="cal-dow">${d}</div>`; });
+
+  // Trailing days from previous month
+  for (let i = firstWeekday - 1; i >= 0; i--) {
+    html += `<button type="button" class="cal-day other-month" tabindex="-1">${daysInPrev - i}</button>`;
+  }
+
+  // Current month
+  for (let day = 1; day <= daysInMonth; day++) {
+    const mm = String(cal.month + 1).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    const iso = `${cal.year}-${mm}-${dd}`;
+    const cls = ['cal-day'];
+    if (iso === todayIso)    cls.push('today');
+    if (iso === selectedIso) cls.push('selected');
+    html += `<button type="button" class="${cls.join(' ')}" data-iso="${iso}">${day}</button>`;
+  }
+
+  // Always render a 6-week (42-cell) grid so popup height doesn't jump
+  // when navigating between months.
+  const pad = 42 - firstWeekday - daysInMonth;
+  for (let day = 1; day <= pad; day++) {
+    html += `<button type="button" class="cal-day other-month" tabindex="-1">${day}</button>`;
+  }
+
+  $('cal-grid').innerHTML = html;
+}
+
+function shiftMonth(delta) {
+  cal.month += delta;
+  while (cal.month < 0)  { cal.month += 12; cal.year--; }
+  while (cal.month > 11) { cal.month -= 12; cal.year++; }
+  renderCalendar();
+}
+
+function setupDatePicker() {
+  const popup = $('date-popup');
+
+  $('date-pick').addEventListener('click', (e) => {
+    e.stopPropagation();
+    popup.hidden ? openDatePopup() : closeDatePopup();
+  });
+
+  $('cal-prev').addEventListener('click', (e) => { e.stopPropagation(); shiftMonth(-1); });
+  $('cal-next').addEventListener('click', (e) => { e.stopPropagation(); shiftMonth( 1); });
+
+  $('cal-today').addEventListener('click', (e) => {
+    e.stopPropagation();
+    $('date').value = todayUS();
+    closeDatePopup();
+    loadGames();
+  });
+
+  $('cal-grid').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-iso]');
+    if (!btn) return;
+    e.stopPropagation();
+    $('date').value = isoDateToUS(btn.dataset.iso);
+    closeDatePopup();
+    loadGames();
+  });
+
+  // Click outside the popup closes it
+  document.addEventListener('click', (e) => {
+    if (popup.hidden) return;
+    if (popup.contains(e.target)) return;
+    if (e.target === $('date-pick') || $('date-pick').contains(e.target)) return;
+    closeDatePopup();
+  });
+
+  // Esc closes the popup (and stops the existing scoreboard-back handler
+  // from also firing, since we're still on the picker view here).
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !popup.hidden) {
+      closeDatePopup();
+      e.stopPropagation();
+    }
+  });
+}
+
 async function loadGames() {
   const league = $('league').value;
   const dateInput = $('date').value.trim();
@@ -410,6 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('league').addEventListener('change', loadGames);
   dateEl.addEventListener('input', () => autoFormatDate(dateEl));
   dateEl.addEventListener('change', loadGames);
+  setupDatePicker();
   $('theme').addEventListener('change', () => applyTheme($('league').value));
   $('go').addEventListener('click', () => {
     const id = $('game').value;
