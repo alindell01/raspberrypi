@@ -8,6 +8,7 @@ const state = {
   lastHomeScore: null,
   lastAwayScore: null,
   lastGoalText: null,
+  lastStats: {},
 };
 
 const POLL_MS = 10000;
@@ -353,33 +354,45 @@ function renderLineScore(g) {
 }
 
 const NHL_STAT_ORDER = [
-  ['sog',    'SOG'],
+  ['sog',    'SHOTS'],
   ['hits',   'HITS'],
-  ['fo_pct', 'FO%'],
-  ['blocks', 'BLK'],
+  ['pp',     'POWER PLAY'],
+  ['fo_pct', 'FACEOFFS'],
+  ['blocks', 'BLK SHOTS'],
 ];
 const NFL_STAT_ORDER = [
-  ['total_yards', 'YDS'],
-  ['top',         'TOP'],
-  ['turnovers',   'TO'],
-  ['third_down',  '3D'],
+  ['total_yards', 'TOTAL YDS'],
+  ['pass_yds',    'PASS YDS'],
+  ['rush_yds',    'RUSH YDS'],
+  ['top',         'POSSESSION'],
+  ['turnovers',   'TURNOVERS'],
+  ['third_down',  '3RD DOWN'],
 ];
 
 function renderTeamStats(g) {
   const stats = g.team_stats;
   const order = state.league === 'nhl' ? NHL_STAT_ORDER : NFL_STAT_ORDER;
+  const prev  = state.lastStats || {};
+  const next  = {};
+
   for (const side of ['home', 'away']) {
     const node = $(`${side}-stats`);
     const s = stats && stats[side];
     if (!s || !Object.keys(s).length) { node.hidden = true; continue; }
     node.innerHTML = order
-      .map(([k, lbl]) => s[k] != null
-        ? `<div class="s"><span class="v">${s[k]}</span><span class="l">${lbl}</span></div>`
-        : '')
+      .map(([k, lbl]) => {
+        if (s[k] == null) return '';
+        const key = `${side}.${k}`;
+        next[key] = s[k];
+        const changed = prev[key] != null && prev[key] !== s[k];
+        const flash = changed ? ' flash' : '';
+        return `<div class="s"><span class="l">${lbl}</span><span class="v${flash}">${s[k]}</span></div>`;
+      })
       .filter(Boolean)
       .join('');
     node.hidden = !node.innerHTML;
   }
+  state.lastStats = next;
 }
 
 function renderGoalies(g) {
@@ -456,13 +469,9 @@ async function refreshScoreboard() {
     $('away-record').textContent = g.away.record || '';
 
     if (state.league === 'nhl') {
-      $('home-extra').textContent = `SOG ${g.home.shots ?? 0}`;
-      $('away-extra').textContent = `SOG ${g.away.shots ?? 0}`;
       $('last-play').textContent = g.last_penalty || '';
       $('situation').hidden = true;
     } else {
-      $('home-extra').textContent = '';
-      $('away-extra').textContent = '';
       $('last-play').textContent = (g.situation && g.situation.last_play) || '';
       renderSituation(g);
     }
@@ -480,11 +489,38 @@ async function refreshScoreboard() {
       `${g.clock ? ' ' + g.clock : ''}`;
 
     const tickerBits = [];
-    tickerBits.push(`${g.away.abbrev} ${g.away.score ?? 0} - ${g.home.score ?? 0} ${g.home.abbrev}`);
+    tickerBits.push(`${g.away.abbrev} ${g.away.score ?? 0} – ${g.home.score ?? 0} ${g.home.abbrev}`);
     if (g.last_goal) {
       tickerBits.push(g.last_goal);
       state.lastGoalText = g.last_goal;
     }
+    if (g.last_penalty) tickerBits.push(g.last_penalty);
+    // Rotating stat callouts — these scroll past in the ribbon and give
+    // that "random stats popping up" broadcast feel.
+    const ts = g.team_stats || {};
+    const a = ts.away || {}, h = ts.home || {};
+    const cmp = (label, key) => {
+      if (a[key] != null && h[key] != null) {
+        tickerBits.push(`${label}: ${g.away.abbrev} ${a[key]} · ${g.home.abbrev} ${h[key]}`);
+      }
+    };
+    cmp('SHOTS',      'sog');
+    cmp('HITS',       'hits');
+    cmp('FACEOFFS',   'fo_pct');
+    cmp('BLOCKED',    'blocks');
+    cmp('GIVEAWAYS',  'giveaways');
+    cmp('TAKEAWAYS',  'takeaways');
+    cmp('POWER PLAY', 'pp');
+    cmp('PIM',        'pim');
+    if (g.goalies) {
+      for (const side of ['away', 'home']) {
+        const gl = g.goalies[side];
+        if (gl && gl.name) {
+          tickerBits.push(`${g[side].abbrev} G: ${gl.name}${gl.saves ? ' ' + gl.saves : ''}${gl.sv_pct ? ' ' + gl.sv_pct : ''}`);
+        }
+      }
+    }
+    if (g.series && g.series.series_score) tickerBits.push(g.series.series_score);
     tickerBits.push(state.league.toUpperCase() + ' live · ' + new Date().toLocaleTimeString('en-US'));
     $('ribbon-bottom-text').textContent = tickerBits.join('   ·   ');
   } catch (err) {

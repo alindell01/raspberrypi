@@ -295,20 +295,27 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   text-align: center;
 }
 
+/* Body row sits the vertical stats column next to the big score.
+   Away: [stats][SCORE].  Home: [SCORE][stats] — so the stat columns
+   are on the outside and the scores hug the centre, matching the
+   in-arena bottom strip. */
+.team-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2vw;
+  width: 100%;
+}
+
+.team-home .team-body { flex-direction: row-reverse; }
+
 .team-score {
-  font-size: 22vh;
+  font-size: 14vh;
   font-weight: 900;
   line-height: 0.9;
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "zero" 0;
-}
-
-.team-extra {
-  font-size: 2.4vh;
-  opacity: 0.75;
-  text-align: center;
-  min-height: 3vh;
 }
 
 .team-record {
@@ -339,33 +346,49 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   opacity: 0.7;
 }
 
+/* Vertical stats bars flanking each team's score, jumbotron-style.
+   Each row is [label]    [value-right-aligned]. */
 .team-stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.5vh 1.2vw;
-  font-size: 1.6vh;
-  width: min(90%, 36vw);
-  margin-top: 0.5vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5vh;
+  min-width: 9vw;
 }
 
 .team-stats .s {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.8vw;
+  align-items: baseline;
   line-height: 1.1;
 }
 
-.team-stats .s .v {
-  font-size: 2.2vh;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
 .team-stats .s .l {
-  font-size: 1.3vh;
-  letter-spacing: 0.08em;
+  font-size: 1.5vh;
+  letter-spacing: 0.06em;
   opacity: 0.55;
   text-transform: uppercase;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.team-stats .s .v {
+  font-size: 2.4vh;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 0;
+  text-align: right;
+}
+
+/* Brief pulse when a stat value changes — broadcast-graphic feel. */
+.team-stats .s .v.flash {
+  animation: stat-flash 1.2s ease-out;
+}
+
+@keyframes stat-flash {
+  0%   { color: currentColor; text-shadow: 0 0 0 currentColor; }
+  20%  { text-shadow: 0 0 14px currentColor; transform: scale(1.15); }
+  100% { color: inherit; text-shadow: 0 0 0 currentColor; transform: scale(1); }
 }
 
 .center {
