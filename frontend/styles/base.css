@@ -7,6 +7,9 @@ html, body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: #000;
   color: #fff;
+  /* Disable any "zero" alternate (slashed or dotted) so 0 reads as a
+     plain O-shape. Inherited by all descendants. */
+  font-feature-settings: "zero" 0;
 }
 
 img { display: block; max-width: 100%; }
@@ -74,6 +77,13 @@ img { display: block; max-width: 100%; }
 .row input:focus {
   outline: 2px solid #FCB514;
   outline-offset: 1px;
+}
+
+.date-hint {
+  font-size: 0.85rem;
+  opacity: 0.5;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 button#go {
@@ -172,8 +182,9 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   font-size: 22vh;
   font-weight: 900;
   line-height: 0.9;
-  font-family: 'Courier New', monospace;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 0;
 }
 
 .team-extra {
@@ -255,9 +266,10 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .clock {
   font-size: 13vh;
-  font-family: 'Courier New', monospace;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 0;
   line-height: 1;
 }
 
@@ -441,8 +453,9 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .power-play .pp-time {
   font-size: 2.2vh;
-  font-family: 'Courier New', monospace;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 0;
   opacity: 0.85;
 }
 

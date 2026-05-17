@@ -34,7 +34,19 @@ function showView(name) {
 function fmtTime(iso) {
   if (!iso) return '';
   try {
-    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
+// Always-en-US mm/dd/yyyy. Used for any user-facing date we render.
+function fmtDateUS(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleDateString('en-US', {
+      month: '2-digit', day: '2-digit', year: 'numeric',
+    });
   } catch {
     return '';
   }
@@ -69,7 +81,8 @@ async function loadGames() {
     }
     const games = await r.json();
     if (!games.length) {
-      const when = date || todayLocal();
+      const whenIso = date || todayLocal();
+      const when = fmtDateUS(whenIso) || whenIso;
       sel.innerHTML = `<option value="">No ${league.toUpperCase()} games on ${when} — try changing the date</option>`;
       return;
     }
@@ -85,7 +98,7 @@ async function loadGames() {
         ? `  ${g.away.score}-${g.home.score}`
         : '';
       const datePrefix = showDate && g.start_time
-        ? new Date(g.start_time).toLocaleDateString([], { weekday: 'short', month: 'numeric', day: 'numeric' }) + ' '
+        ? fmtDateUS(g.start_time) + ' '
         : '';
       return `<option value="${g.id}">${datePrefix}${g.away.abbrev} @ ${g.home.abbrev} — ${tag}${score}</option>`;
     }).join('');
@@ -316,7 +329,7 @@ async function refreshScoreboard() {
       tickerBits.push(g.last_goal);
       state.lastGoalText = g.last_goal;
     }
-    tickerBits.push(state.league.toUpperCase() + ' live · ' + new Date().toLocaleTimeString());
+    tickerBits.push(state.league.toUpperCase() + ' live · ' + new Date().toLocaleTimeString('en-US'));
     $('ribbon-bottom-text').textContent = tickerBits.join('   ·   ');
   } catch (err) {
     console.error('refreshScoreboard failed', err);
