@@ -571,22 +571,7 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   100% { opacity: 0; background: radial-gradient(circle at center, rgba(252,181,20,0) 0%, rgba(252,181,20,0) 100%); }
 }
 
-.crossed-sabres {
-  height: 9vh;
-  display: flex;
-  justify-content: center;
-}
-
-.crossed-sabres svg {
-  height: 100%;
-  opacity: 0.4;
-}
-
-.crossed-sabres img {
-  height: 100%;
-  width: auto;
-  object-fit: contain;
-}
+.crossed-sabres { display: none; }
 
 /* Arena banner: centered logo header sitting above the videoboard,
    mimicking the venue signage that crowns the actual scoreboard

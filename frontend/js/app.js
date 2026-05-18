@@ -475,19 +475,24 @@ function renderLineScore(g) {
 }
 
 const NHL_STAT_ORDER = [
-  ['sog',    'SHOTS'],
-  ['hits',   'HITS'],
-  ['pp',     'POWER PLAY'],
-  ['fo_pct', 'FACEOFFS'],
-  ['blocks', 'BLK SHOTS'],
+  ['sog',       'SHOTS'],
+  ['hits',      'HITS'],
+  ['blocks',    'BLK SHOTS'],
+  ['fo_pct',    'FACEOFFS'],
+  ['pp',        'POWER PLAY'],
+  ['pim',       'PIM'],
+  ['giveaways', 'GIVEAWAYS'],
+  ['takeaways', 'TAKEAWAYS'],
 ];
 const NFL_STAT_ORDER = [
   ['total_yards', 'TOTAL YDS'],
+  ['first_downs', 'FIRST DOWNS'],
   ['pass_yds',    'PASS YDS'],
   ['rush_yds',    'RUSH YDS'],
+  ['third_down',  '3RD DOWN'],
   ['top',         'POSSESSION'],
   ['turnovers',   'TURNOVERS'],
-  ['third_down',  '3RD DOWN'],
+  ['penalties',   'PENALTIES'],
 ];
 
 function renderTeamStats(g) {
@@ -715,7 +720,6 @@ function startScoreboard(gameId, league) {
   state.delaySeconds = parseInt($('delay').value, 10) || 0;
   state.delayQueue = [];
   applyTheme(league);
-  loadCrossedSabres();
   showView('scoreboard');
   if (state.delaySeconds > 0) {
     $('status').textContent = `Delayed playback · waiting ~${formatDelayLabel(state.delaySeconds)}`;
@@ -745,48 +749,6 @@ function stopScoreboard() {
   loadGames();
 }
 
-// Try user-supplied crossed-sabres art per theme. Order of preference:
-//   /assets/<theme>/swords.svg|.png  (theme-specific override)
-//   /assets/sabres/swords.svg|.png   (universal default)
-//   inline SVG fallback
-// Re-runs when the theme changes so each theme can have its own art.
-// A page-load cache-bust is appended so browsers don't stick on a 404
-// from a previous session when the user adds the file later.
-const SWORDS_CACHE_BUST = Date.now();
-
-function loadCrossedSabres() {
-  const img = $('crossed-sabres-img');
-  const svg = $('crossed-sabres-svg');
-  if (!img || !svg) return;
-  const theme = effectiveTheme();
-  const tryList = [
-    `/assets/${theme}/swords.svg`,
-    `/assets/${theme}/swords.png`,
-    `/assets/sabres/swords.svg`,
-    `/assets/sabres/swords.png`,
-  ];
-
-  let i = 0;
-  const attempt = () => {
-    if (i >= tryList.length) {
-      img.onerror = null;
-      img.removeAttribute('src');
-      img.hidden = true;
-      svg.style.display = '';
-      return;
-    }
-    img.onerror = () => { i++; attempt(); };
-    img.onload  = () => { img.hidden = false; svg.style.display = 'none'; };
-    img.src = `${tryList[i]}?v=${SWORDS_CACHE_BUST}`;
-  };
-  attempt();
-}
-
-function effectiveTheme() {
-  const choice = $('theme').value;
-  if (choice !== 'auto') return choice;
-  return state.league === 'nfl' ? 'bills' : 'sabres';
-}
 
 document.addEventListener('DOMContentLoaded', () => {
   const dateEl = $('date');
@@ -795,10 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
   dateEl.addEventListener('input', () => autoFormatDate(dateEl));
   dateEl.addEventListener('change', loadGames);
   setupDatePicker();
-  $('theme').addEventListener('change', () => {
-    applyTheme($('league').value);
-    loadCrossedSabres();
-  });
+  $('theme').addEventListener('change', () => applyTheme($('league').value));
   $('delay').addEventListener('change', () => {
     state.delaySeconds = parseInt($('delay').value, 10) || 0;
     if (state.gameId) flushDelayQueue();
@@ -814,6 +773,5 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.gameId) stopScoreboard();
     }
   });
-  loadCrossedSabres();
   loadGames();
 });
