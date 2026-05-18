@@ -690,7 +690,10 @@ function applyScoreboard(g) {
     const liveTag = state.delaySeconds > 0
       ? `${state.league.toUpperCase()} +${formatDelayLabel(state.delaySeconds)} delay · `
       : `${state.league.toUpperCase()} live · `;
-    tickerBits.push(liveTag + new Date().toLocaleTimeString('en-US'));
+    const timeStr = new Date().toLocaleTimeString('en-US', {
+      hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true,
+    });
+    tickerBits.push(liveTag + timeStr);
     $('ribbon-bottom-text').textContent = tickerBits.join('   ·   ');
   } catch (err) {
     console.error('applyScoreboard failed', err);
@@ -747,6 +750,10 @@ function stopScoreboard() {
 //   /assets/sabres/swords.svg|.png   (universal default)
 //   inline SVG fallback
 // Re-runs when the theme changes so each theme can have its own art.
+// A page-load cache-bust is appended so browsers don't stick on a 404
+// from a previous session when the user adds the file later.
+const SWORDS_CACHE_BUST = Date.now();
+
 function loadCrossedSabres() {
   const img = $('crossed-sabres-img');
   const svg = $('crossed-sabres-svg');
@@ -758,9 +765,6 @@ function loadCrossedSabres() {
     `/assets/sabres/swords.svg`,
     `/assets/sabres/swords.png`,
   ];
-  const cacheKey = tryList.join('|');
-  if (img.dataset.lastTry === cacheKey) return;
-  img.dataset.lastTry = cacheKey;
 
   let i = 0;
   const attempt = () => {
@@ -773,7 +777,7 @@ function loadCrossedSabres() {
     }
     img.onerror = () => { i++; attempt(); };
     img.onload  = () => { img.hidden = false; svg.hidden = true; };
-    img.src = tryList[i];
+    img.src = `${tryList[i]}?v=${SWORDS_CACHE_BUST}`;
   };
   attempt();
 }
