@@ -12,6 +12,9 @@ const state = {
   leaders: null,
   leaderIdx: 0,
   leaderRotateHandle: null,
+  delaySeconds: 0,
+  delayQueue: [],
+  delayFlushHandle: null,
 };
 
 const POLL_MS = 10000;
@@ -574,7 +577,31 @@ async function refreshScoreboard() {
     const r = await fetch(`/api/game/${state.league}/${state.gameId}`);
     if (!r.ok) throw new Error(r.statusText);
     const g = await r.json();
+    state.delayQueue.push({ fetchedAt: Date.now(), data: g });
+    flushDelayQueue();
+  } catch (err) {
+    console.error('refreshScoreboard failed', err);
+  }
+}
 
+function flushDelayQueue() {
+  if (state.delayFlushHandle) {
+    clearTimeout(state.delayFlushHandle);
+    state.delayFlushHandle = null;
+  }
+  const now = Date.now();
+  const delayMs = state.delaySeconds * 1000;
+  while (state.delayQueue.length && state.delayQueue[0].fetchedAt + delayMs <= now) {
+    applyScoreboard(state.delayQueue.shift().data);
+  }
+  if (state.delayQueue.length) {
+    const next = state.delayQueue[0].fetchedAt + delayMs - now;
+    state.delayFlushHandle = setTimeout(flushDelayQueue, Math.max(50, next));
+  }
+}
+
+function applyScoreboard(g) {
+  try {
     $('home-name').textContent = g.home.name || '';
     $('away-name').textContent = g.away.name || '';
 
@@ -660,11 +687,20 @@ async function refreshScoreboard() {
       }
     }
     if (g.series && g.series.series_score) tickerBits.push(g.series.series_score);
-    tickerBits.push(state.league.toUpperCase() + ' live · ' + new Date().toLocaleTimeString('en-US'));
+    const liveTag = state.delaySeconds > 0
+      ? `${state.league.toUpperCase()} +${formatDelayLabel(state.delaySeconds)} delay · `
+      : `${state.league.toUpperCase()} live · `;
+    tickerBits.push(liveTag + new Date().toLocaleTimeString('en-US'));
     $('ribbon-bottom-text').textContent = tickerBits.join('   ·   ');
   } catch (err) {
-    console.error('refreshScoreboard failed', err);
+    console.error('applyScoreboard failed', err);
   }
+}
+
+function formatDelayLabel(s) {
+  if (s < 60) return `${s}s`;
+  const m = Math.round(s / 60);
+  return `${m}m`;
 }
 
 function startScoreboard(gameId, league) {
@@ -673,8 +709,13 @@ function startScoreboard(gameId, league) {
   state.lastHomeScore = null;
   state.lastAwayScore = null;
   state.lastGoalText = null;
+  state.delaySeconds = parseInt($('delay').value, 10) || 0;
+  state.delayQueue = [];
   applyTheme(league);
   showView('scoreboard');
+  if (state.delaySeconds > 0) {
+    $('status').textContent = `Delayed playback · waiting ~${formatDelayLabel(state.delaySeconds)}`;
+  }
   refreshScoreboard();
   if (state.pollHandle) clearInterval(state.pollHandle);
   state.pollHandle = setInterval(refreshScoreboard, POLL_MS);
@@ -689,6 +730,11 @@ function stopScoreboard() {
     clearInterval(state.leaderRotateHandle);
     state.leaderRotateHandle = null;
   }
+  if (state.delayFlushHandle) {
+    clearTimeout(state.delayFlushHandle);
+    state.delayFlushHandle = null;
+  }
+  state.delayQueue = [];
   state.leaders = null;
   state.gameId = null;
   showView('picker');
@@ -721,6 +767,10 @@ document.addEventListener('DOMContentLoaded', () => {
   dateEl.addEventListener('change', loadGames);
   setupDatePicker();
   $('theme').addEventListener('change', () => applyTheme($('league').value));
+  $('delay').addEventListener('change', () => {
+    state.delaySeconds = parseInt($('delay').value, 10) || 0;
+    if (state.gameId) flushDelayQueue();
+  });
   $('go').addEventListener('click', () => {
     const id = $('game').value;
     const league = $('league').value;
