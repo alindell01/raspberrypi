@@ -768,10 +768,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (id) startScoreboard(id, league);
   });
   $('back').addEventListener('click', stopScoreboard);
+  $('fullscreen').addEventListener('click', toggleFullscreen);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' || e.key === 'b' || e.key === 'B') {
+    if (e.key === 'Escape') {
+      if (document.fullscreenElement) return;
       if (state.gameId) stopScoreboard();
+    } else if (e.key === 'b' || e.key === 'B') {
+      if (state.gameId) stopScoreboard();
+    } else if (e.key === 'f' || e.key === 'F') {
+      toggleFullscreen();
     }
   });
   loadGames();
 });
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  } else {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+}

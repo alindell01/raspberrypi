@@ -732,6 +732,25 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .back-btn:hover { opacity: 1; }
 
+.fs-btn {
+  position: fixed;
+  top: 1vh;
+  right: 1vh;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.15;
+  transition: opacity 0.2s;
+}
+
+.fs-btn:hover { opacity: 1; }
+
 /* Pulse animation when score changes */
 .team-score.pulse { animation: score-pulse 0.9s ease-out; }
 
