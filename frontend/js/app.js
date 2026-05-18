@@ -71,7 +71,7 @@ function showView(name) {
 function fmtTime(iso) {
   if (!iso) return '';
   try {
-    return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   } catch {
     return '';
   }
@@ -772,11 +772,11 @@ function loadCrossedSabres() {
       img.onerror = null;
       img.removeAttribute('src');
       img.hidden = true;
-      svg.hidden = false;
+      svg.style.display = '';
       return;
     }
     img.onerror = () => { i++; attempt(); };
-    img.onload  = () => { img.hidden = false; svg.hidden = true; };
+    img.onload  = () => { img.hidden = false; svg.style.display = 'none'; };
     img.src = `${tryList[i]}?v=${SWORDS_CACHE_BUST}`;
   };
   attempt();
