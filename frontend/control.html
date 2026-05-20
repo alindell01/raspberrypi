@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1f3f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Scoreboard Remote</title>
+  <link rel="stylesheet" href="/styles/control.css">
+</head>
+<body>
+  <main class="ctrl">
+    <header class="ctrl-head">
+      <h1>Scoreboard Remote</h1>
+      <p class="now" id="now">—</p>
+    </header>
+
+    <section class="field">
+      <label for="league">League</label>
+      <select id="league">
+        <option value="nhl">NHL</option>
+        <option value="nfl">NFL</option>
+      </select>
+    </section>
+
+    <section class="field">
+      <label for="date">Date</label>
+      <input type="date" id="date">
+    </section>
+
+    <section class="field">
+      <label for="game">Game</label>
+      <select id="game"><option>Loading…</option></select>
+    </section>
+
+    <section class="field">
+      <label for="theme">Theme</label>
+      <select id="theme">
+        <option value="auto">Auto (by league)</option>
+        <option value="sabres">Sabres / KeyBank</option>
+        <option value="goathead">Sabres Goathead</option>
+        <option value="slug">Sabres Slug</option>
+        <option value="bills">Bills / Highmark</option>
+        <option value="generic">Generic dark</option>
+      </select>
+    </section>
+
+    <section class="field">
+      <label for="delay">Broadcast delay</label>
+      <select id="delay">
+        <option value="0">Live (no delay)</option>
+        <option value="15">15 seconds</option>
+        <option value="30">30 seconds</option>
+        <option value="60">1 minute</option>
+        <option value="120">2 minutes</option>
+        <option value="300">5 minutes</option>
+        <option value="600">10 minutes</option>
+      </select>
+    </section>
+
+    <div class="actions">
+      <button id="show" class="btn-primary">Show on TV</button>
+      <button id="stop" class="btn-secondary">Back to picker</button>
+    </div>
+
+    <p class="hint" id="hint"></p>
+  </main>
+
+  <script src="/js/control.js"></script>
+</body>
+</html>

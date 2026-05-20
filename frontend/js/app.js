@@ -761,17 +761,31 @@ document.addEventListener('DOMContentLoaded', () => {
   dateEl.addEventListener('input', () => autoFormatDate(dateEl));
   dateEl.addEventListener('change', loadGames);
   setupDatePicker();
-  $('theme').addEventListener('change', () => applyTheme($('league').value));
+  $('theme').addEventListener('change', () => {
+    applyTheme($('league').value);
+    pushKioskConfig({ theme: $('theme').value });
+  });
   $('delay').addEventListener('change', () => {
     state.delaySeconds = parseInt($('delay').value, 10) || 0;
     if (state.gameId) flushDelayQueue();
+    pushKioskConfig({ delay_seconds: state.delaySeconds });
   });
   $('go').addEventListener('click', () => {
     const id = $('game').value;
     const league = $('league').value;
-    if (id) startScoreboard(id, league);
+    if (id) {
+      startScoreboard(id, league);
+      pushKioskConfig({
+        league, game_id: id, running: true,
+        theme: $('theme').value,
+        delay_seconds: parseInt($('delay').value, 10) || 0,
+      });
+    }
   });
-  $('back').addEventListener('click', stopScoreboard);
+  $('back').addEventListener('click', () => {
+    stopScoreboard();
+    pushKioskConfig({ running: false });
+  });
   $('fullscreen').addEventListener('click', toggleFullscreen);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
@@ -784,7 +798,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   loadGames();
+  startConfigSync();
 });
+
+const CONFIG_POLL_MS = 1500;
+
+function startConfigSync() {
+  state.knownConfigVersion = -1;
+  pollConfig();
+  setInterval(pollConfig, CONFIG_POLL_MS);
+}
+
+async function pollConfig() {
+  try {
+    const r = await fetch('/api/config');
+    if (!r.ok) return;
+    const data = await r.json();
+    if (data.version === state.knownConfigVersion) return;
+    // Server restart resets version to 0; sync our pointer without
+    // applying so a service restart doesn't kick the user back to picker.
+    if (data.version < state.knownConfigVersion) {
+      state.knownConfigVersion = data.version;
+      return;
+    }
+    state.knownConfigVersion = data.version;
+    applyRemoteConfig(data.config);
+  } catch {
+    // ignore - next poll retries
+  }
+}
+
+async function pushKioskConfig(updates) {
+  try {
+    const r = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (!r.ok) return;
+    const data = await r.json();
+    state.knownConfigVersion = data.version;
+  } catch {
+    // ignore - the kiosk still works without server sync
+  }
+}
+
+function applyRemoteConfig(cfg) {
+  if (cfg.theme && $('theme').value !== cfg.theme) {
+    $('theme').value = cfg.theme;
+    applyTheme(state.league || $('league').value);
+  }
+  if (cfg.delay_seconds != null && cfg.delay_seconds !== state.delaySeconds) {
+    state.delaySeconds = cfg.delay_seconds;
+    $('delay').value = String(cfg.delay_seconds);
+    if (state.gameId) flushDelayQueue();
+  }
+  if (cfg.league && $('league').value !== cfg.league) {
+    $('league').value = cfg.league;
+  }
+  if (cfg.running && cfg.game_id) {
+    if (state.gameId !== cfg.game_id || state.league !== cfg.league) {
+      startScoreboard(cfg.game_id, cfg.league || $('league').value);
+    }
+  } else if (!cfg.running) {
+    if (state.gameId) stopScoreboard();
+  }
+}
 
 function toggleFullscreen() {
   if (document.fullscreenElement) {

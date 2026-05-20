@@ -3,8 +3,9 @@ from pathlib import Path
 
 import httpx
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 from backend.cache import TTLCache
 from backend.providers import nfl, nhl
@@ -13,6 +14,28 @@ ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
 
 cache = TTLCache(ttl_seconds=5)
+
+
+class ConfigUpdate(BaseModel):
+    league: str | None = None
+    date: str | None = None
+    game_id: str | None = None
+    theme: str | None = None
+    delay_seconds: int | None = None
+    running: bool | None = None
+
+
+_config_state = {
+    "version": 0,
+    "config": {
+        "league": "nhl",
+        "date": None,
+        "game_id": None,
+        "theme": "auto",
+        "delay_seconds": 0,
+        "running": False,
+    },
+}
 
 
 @asynccontextmanager
@@ -76,6 +99,25 @@ async def game(league: str, game_id: str):
         raise HTTPException(400, "Unknown league")
     cache.set(key, result)
     return result
+
+
+@app.get("/api/config")
+async def get_config():
+    return _config_state
+
+
+@app.post("/api/config")
+async def set_config(update: ConfigUpdate):
+    data = update.model_dump(exclude_none=True)
+    for key, value in data.items():
+        _config_state["config"][key] = value
+    _config_state["version"] += 1
+    return _config_state
+
+
+@app.get("/control")
+async def control_page():
+    return FileResponse(FRONTEND / "control.html")
 
 
 app.mount("/", StaticFiles(directory=str(FRONTEND), html=True), name="frontend")
