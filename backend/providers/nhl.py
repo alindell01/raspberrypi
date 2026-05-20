@@ -313,7 +313,7 @@ _LEADER_CATEGORIES: list[tuple[str, str]] = [
 ]
 
 
-def _leaders_from_side(side_stats: dict) -> dict:
+def _leaders_from_side(side_stats: dict, season: str, team_abbrev: str) -> dict:
     skaters = (side_stats.get("forwards") or []) + (side_stats.get("defense") or [])
     out: dict[str, dict] = {}
     for label, key in _LEADER_CATEGORIES:
@@ -327,19 +327,28 @@ def _leaders_from_side(side_stats: dict) -> dict:
                 best_val = v
                 best = p
         if best and best_val > 0:
-            out[label] = {
+            leader = {
                 "name":   _name(best.get("name")),
                 "number": best.get("sweaterNumber"),
                 "value":  best_val,
             }
+            pid = best.get("playerId")
+            if pid and season and team_abbrev:
+                leader["photo"] = (
+                    f"https://assets.nhle.com/mugs/nhl/{season}/{team_abbrev}/{pid}.png"
+                )
+            out[label] = leader
     return out
 
 
 def _team_leaders(box: dict) -> dict:
     pbg = box.get("playerByGameStats") or {}
+    season = str(box.get("season") or "")
+    away_abbrev = (box.get("awayTeam") or {}).get("abbrev", "")
+    home_abbrev = (box.get("homeTeam") or {}).get("abbrev", "")
     return {
-        "away": _leaders_from_side(pbg.get("awayTeam") or {}),
-        "home": _leaders_from_side(pbg.get("homeTeam") or {}),
+        "away": _leaders_from_side(pbg.get("awayTeam") or {}, season, away_abbrev),
+        "home": _leaders_from_side(pbg.get("homeTeam") or {}, season, home_abbrev),
     }
 
 

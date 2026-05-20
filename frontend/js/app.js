@@ -402,7 +402,11 @@ function paintLeaders() {
         `<span class="lead-value">0</span>`;
     } else {
       const num = lead.number != null ? ` #${lead.number}` : '';
+      const photo = lead.photo
+        ? `<img class="lead-photo" src="${lead.photo}" alt="" onerror="this.style.display='none'">`
+        : '';
       node.innerHTML =
+        photo +
         `<span class="lead-label">${label} LEADER</span>` +
         `<span class="lead-player">${lead.name}${num}</span>` +
         `<span class="lead-value">${lead.value}</span>`;

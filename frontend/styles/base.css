@@ -411,11 +411,10 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
 .team-leader {
   display: grid;
   grid-template-rows: auto auto;
-  grid-template-columns: auto auto;
-  column-gap: 1vw;
+  grid-template-columns: auto 1fr auto;
+  column-gap: 0.8vw;
   row-gap: 0.1vh;
   align-items: center;
-  justify-items: center;
   min-height: 7vh;
   margin: 0 1.2vw;
   padding: 1.4vh 0 0.4vh;
@@ -427,26 +426,46 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   padding-top: 0.4vh;
 }
 
+.team-leader .lead-photo {
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  width: 6vh;
+  height: 6vh;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  background: rgba(255,255,255,0.06);
+  border: 0.2vh solid currentColor;
+}
+
 .team-leader .lead-label {
-  grid-column: 1 / span 2;
+  grid-row: 1;
+  grid-column: 2 / span 2;
   font-size: 1.3vh;
   letter-spacing: 0.14em;
   opacity: 0.65;
   font-weight: 700;
   text-transform: uppercase;
+  justify-self: start;
 }
 
 .team-leader .lead-player {
+  grid-row: 2;
+  grid-column: 2;
   font-size: 2vh;
   font-weight: 700;
   white-space: nowrap;
+  justify-self: start;
 }
 
 .team-leader .lead-value {
+  grid-row: 2;
+  grid-column: 3;
   font-size: 2.8vh;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "zero" 0;
+  justify-self: end;
 }
 
 .team-leader.lead-flip {
