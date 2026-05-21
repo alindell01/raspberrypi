@@ -12,6 +12,9 @@ const state = {
   leaders: null,
   leaderIdx: 0,
   leaderRotateHandle: null,
+  rosters: null,
+  rosterIdx: { home: 0, away: 0 },
+  rosterRotateHandle: null,
   delaySeconds: 0,
   delayQueue: [],
   delayFlushHandle: null,
@@ -444,6 +447,68 @@ function renderLeaders(g) {
   }
 }
 
+/* ---------- Rotating roster spotlight ---------- */
+
+const ROSTER_ROTATE_MS = 4500;
+
+function renderRosters(g) {
+  state.rosters = g.rosters || null;
+  const hasAny = state.rosters && (
+    (state.rosters.away && state.rosters.away.length) ||
+    (state.rosters.home && state.rosters.home.length)
+  );
+  for (const side of ['home', 'away']) {
+    const list = state.rosters && state.rosters[side];
+    $(`${side}-roster`).hidden = !(list && list.length);
+  }
+  if (!hasAny) {
+    if (state.rosterRotateHandle) clearInterval(state.rosterRotateHandle);
+    state.rosterRotateHandle = null;
+    return;
+  }
+  for (const side of ['home', 'away']) {
+    const list = (state.rosters && state.rosters[side]) || [];
+    if (state.rosterIdx[side] >= list.length) state.rosterIdx[side] = 0;
+  }
+  paintRosters();
+  if (!state.rosterRotateHandle) {
+    state.rosterRotateHandle = setInterval(() => {
+      for (const side of ['home', 'away']) {
+        const list = (state.rosters && state.rosters[side]) || [];
+        if (list.length) {
+          state.rosterIdx[side] = (state.rosterIdx[side] + 1) % list.length;
+        }
+      }
+      paintRosters();
+    }, ROSTER_ROTATE_MS);
+  }
+}
+
+function paintRosters() {
+  for (const side of ['home', 'away']) {
+    const list = (state.rosters && state.rosters[side]) || [];
+    if (!list.length) continue;
+    const p = list[state.rosterIdx[side] % list.length];
+    const photo = $(`${side}-roster-photo`);
+    const nameEl = $(`${side}-roster-name`);
+    const posEl  = $(`${side}-roster-pos`);
+    if (p.photo) {
+      photo.onerror = () => { photo.style.visibility = 'hidden'; };
+      photo.onload  = () => { photo.style.visibility = 'visible'; };
+      photo.src = p.photo;
+    } else {
+      photo.style.visibility = 'hidden';
+    }
+    const num = p.number != null ? `#${p.number} ` : '';
+    nameEl.textContent = `${num}${p.name}`;
+    posEl.textContent  = p.position || '';
+    const node = $(`${side}-roster`);
+    node.classList.remove('roster-flip');
+    void node.offsetWidth;
+    node.classList.add('roster-flip');
+  }
+}
+
 function renderPreview(g) {
   const node = $('preview');
   if (g.state !== 'pre' || !g.preview) {
@@ -520,24 +585,16 @@ function renderLineScore(g) {
 }
 
 const NHL_STAT_ORDER = [
-  ['sog',       'SHOTS'],
-  ['hits',      'HITS'],
-  ['blocks',    'BLK SHOTS'],
-  ['fo_pct',    'FACEOFFS'],
-  ['pp',        'POWER PLAY'],
-  ['pim',       'PIM'],
-  ['giveaways', 'GIVEAWAYS'],
-  ['takeaways', 'TAKEAWAYS'],
+  ['sog',    'SHOTS'],
+  ['hits',   'HITS'],
+  ['pp',     'POWER PLAY'],
+  ['fo_pct', 'FACEOFFS'],
 ];
 const NFL_STAT_ORDER = [
   ['total_yards', 'TOTAL YDS'],
-  ['first_downs', 'FIRST DOWNS'],
-  ['pass_yds',    'PASS YDS'],
-  ['rush_yds',    'RUSH YDS'],
   ['third_down',  '3RD DOWN'],
   ['top',         'POSSESSION'],
   ['turnovers',   'TURNOVERS'],
-  ['penalties',   'PENALTIES'],
 ];
 
 function renderTeamStats(g) {
@@ -572,7 +629,11 @@ function syncRailColumns() {
     if (!rail) continue;
     const stats  = $(`${side}-stats`);
     const leader = $(`${side}-leader`);
-    rail.hidden = (!stats || stats.hidden) && (!leader || leader.hidden);
+    const roster = $(`${side}-roster`);
+    rail.hidden =
+      (!stats  || stats.hidden) &&
+      (!leader || leader.hidden) &&
+      (!roster || roster.hidden);
   }
 }
 
@@ -685,6 +746,7 @@ function applyScoreboard(g) {
     renderTeamStats(g);
     renderGoalies(g);
     renderLeaders(g);
+    renderRosters(g);
     renderPreview(g);
     syncRailColumns();
 
@@ -783,6 +845,10 @@ function stopScoreboard() {
   if (state.leaderRotateHandle) {
     clearInterval(state.leaderRotateHandle);
     state.leaderRotateHandle = null;
+  }
+  if (state.rosterRotateHandle) {
+    clearInterval(state.rosterRotateHandle);
+    state.rosterRotateHandle = null;
   }
   if (state.delayFlushHandle) {
     clearTimeout(state.delayFlushHandle);

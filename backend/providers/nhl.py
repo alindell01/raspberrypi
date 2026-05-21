@@ -417,6 +417,43 @@ def _team_leaders(box: dict) -> dict:
     }
 
 
+def _roster_from_side(side: dict, season: str, team_abbrev: str) -> list[dict]:
+    players = (
+        (side.get("forwards") or [])
+        + (side.get("defense") or [])
+        + (side.get("goalies") or [])
+    )
+    out: list[dict] = []
+    for p in players:
+        pid = p.get("playerId")
+        name = _name(p.get("name"))
+        if not pid or not name:
+            continue
+        entry: dict[str, Any] = {
+            "id":       pid,
+            "name":     name,
+            "number":   p.get("sweaterNumber"),
+            "position": p.get("position", ""),
+        }
+        if season and team_abbrev:
+            entry["photo"] = (
+                f"https://assets.nhle.com/mugs/nhl/{season}/{team_abbrev}/{pid}.png"
+            )
+        out.append(entry)
+    return out
+
+
+def _rosters_from_boxscore(box: dict) -> dict:
+    pbg = box.get("playerByGameStats") or {}
+    season = str(box.get("season") or "")
+    away_abbrev = (box.get("awayTeam") or {}).get("abbrev", "")
+    home_abbrev = (box.get("homeTeam") or {}).get("abbrev", "")
+    return {
+        "away": _roster_from_side(pbg.get("awayTeam") or {}, season, away_abbrev),
+        "home": _roster_from_side(pbg.get("homeTeam") or {}, season, home_abbrev),
+    }
+
+
 async def get_game(client: httpx.AsyncClient, game_id: str) -> dict:
     box_url     = f"{BASE}/gamecenter/{game_id}/boxscore"
     landing_url = f"{BASE}/gamecenter/{game_id}/landing"
@@ -446,6 +483,10 @@ async def get_game(client: httpx.AsyncClient, game_id: str) -> dict:
     leaders = _team_leaders(box_json)
     if leaders.get("home") or leaders.get("away"):
         game["leaders"] = leaders
+
+    rosters = _rosters_from_boxscore(box_json)
+    if rosters.get("home") or rosters.get("away"):
+        game["rosters"] = rosters
 
     if not isinstance(landing_r, Exception) and landing_r.status_code == 200:
         try:

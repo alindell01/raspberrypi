@@ -408,6 +408,59 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
 /* Rotating "stat leaders" panel sits inside the rail column under
    the team stats. The rail's outer borders frame both sections, so
    the leader panel itself only needs a top divider. */
+/* Rotating roster spotlight: large circular headshot with the player's
+   name and position below. Cycles through every dressed player. */
+.team-roster {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6vh;
+  margin: 0 1.2vw;
+  padding: 1.4vh 0;
+  border-top: 0.2vh solid currentColor;
+}
+
+.team-roster .roster-photo {
+  width: 13vh;
+  height: 13vh;
+  max-width: none;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 18%;
+  background: rgba(255,255,255,0.06);
+  border: 0.25vh solid currentColor;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+}
+
+.team-roster .roster-name {
+  font-size: 2vh;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.15;
+  margin-top: 0.4vh;
+}
+
+.team-roster .roster-pos {
+  font-size: 1.3vh;
+  letter-spacing: 0.16em;
+  opacity: 0.6;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.team-roster.roster-flip { animation: roster-flip 0.6s ease-out; }
+@keyframes roster-flip {
+  0%   { opacity: 0; transform: scale(0.92); }
+  60%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 1; }
+}
+
+.rail-column .team-stats[hidden] + .team-roster {
+  border-top: 0;
+  padding-top: 0.4vh;
+}
+
 .team-leader {
   display: grid;
   grid-template-rows: auto auto;
