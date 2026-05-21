@@ -444,6 +444,47 @@ function renderLeaders(g) {
   }
 }
 
+function renderPreview(g) {
+  const node = $('preview');
+  if (g.state !== 'pre' || !g.preview) {
+    node.hidden = true;
+    return;
+  }
+  const pv = g.preview;
+  const away = (g.away && g.away.abbrev) || 'AWAY';
+  const home = (g.home && g.home.abbrev) || 'HOME';
+
+  $('preview-away-team').textContent = away;
+  $('preview-home-team').textContent = home;
+
+  $('preview-last10-away').textContent = (pv.away && pv.away.last10)        || '';
+  $('preview-last10-home').textContent = (pv.home && pv.home.last10)        || '';
+  $('preview-season-away').textContent = (pv.away && pv.away.season_record) || '';
+  $('preview-season-home').textContent = (pv.home && pv.home.season_record) || '';
+  $('preview-coach-away').textContent  = (pv.away && pv.away.coach)         || '';
+  $('preview-coach-home').textContent  = (pv.home && pv.home.coach)         || '';
+
+  const awayScr = (pv.away && pv.away.scratches) || [];
+  const homeScr = (pv.home && pv.home.scratches) || [];
+  $('scratches-away-title').textContent = `${away} SCRATCHES`;
+  $('scratches-home-title').textContent = `${home} SCRATCHES`;
+  $('scratches-away').innerHTML = renderScratchList(awayScr);
+  $('scratches-home').innerHTML = renderScratchList(homeScr);
+  $('scratches-away').classList.toggle('empty', awayScr.length === 0);
+  $('scratches-home').classList.toggle('empty', homeScr.length === 0);
+  $('scratches').hidden = awayScr.length === 0 && homeScr.length === 0;
+
+  node.hidden = false;
+}
+
+function renderScratchList(list) {
+  if (!list || !list.length) return '';
+  return list.map(s => {
+    const pos = s.position ? `<span class="pos">${s.position}</span>` : '';
+    return `<span class="scratch">${s.name}${pos}</span>`;
+  }).join('');
+}
+
 function renderPowerPlay(g) {
   const node = $('power-play');
   const pp = g.power_play;
@@ -644,6 +685,7 @@ function applyScoreboard(g) {
     renderTeamStats(g);
     renderGoalies(g);
     renderLeaders(g);
+    renderPreview(g);
     syncRailColumns();
 
     $('ribbon-top-text').textContent =

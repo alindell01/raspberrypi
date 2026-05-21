@@ -163,6 +163,71 @@ def _extract_series(landing: dict) -> dict | None:
     return out
 
 
+def _person_name(value: Any) -> str:
+    """Normalize NHL person-name fields, which appear as either
+    {default: 'Lindy Ruff'}, {firstName: {default}, lastName: {default}},
+    or a plain string."""
+    if isinstance(value, str):
+        return value.strip()
+    if not isinstance(value, dict):
+        return ""
+    if "default" in value:
+        v = value.get("default")
+        return v.strip() if isinstance(v, str) else ""
+    first = value.get("firstName") or {}
+    last = value.get("lastName") or {}
+    if isinstance(first, dict): first = first.get("default", "")
+    if isinstance(last,  dict): last  = last.get("default", "")
+    return f"{first or ''} {last or ''}".strip()
+
+
+def _preview_from_landing(landing: dict) -> dict | None:
+    """Pregame info from the matchup section: head coaches, scratches,
+    last-10 records, and head-to-head season series for both teams."""
+    matchup = landing.get("matchup") or {}
+    if not matchup:
+        return None
+
+    gi = matchup.get("gameInfo") or {}
+
+    def scratches(side: dict) -> list[dict]:
+        out = []
+        for s in (side.get("scratches") or []):
+            name = _person_name(s) or _person_name({
+                "firstName": s.get("firstName"),
+                "lastName":  s.get("lastName"),
+            })
+            if name:
+                out.append({"name": name, "position": s.get("position", "")})
+        return out
+
+    away_gi = gi.get("awayTeam") or {}
+    home_gi = gi.get("homeTeam") or {}
+
+    last10 = matchup.get("last10Record") or {}
+    season = matchup.get("season") or {}
+
+    def side(team_key: str, gi_side: dict) -> dict:
+        return {
+            "coach":         _person_name(gi_side.get("headCoach")),
+            "scratches":     scratches(gi_side),
+            "last10":        (last10.get(team_key) or {}).get("record", ""),
+            "season_record": (season.get(team_key) or {}).get("record", ""),
+        }
+
+    away = side("awayTeam", away_gi)
+    home = side("homeTeam", home_gi)
+
+    any_data = any(
+        v for s in (away, home) for k, v in s.items()
+        if (v if not isinstance(v, list) else len(v) > 0)
+    )
+    if not any_data:
+        return None
+
+    return {"away": away, "home": home}
+
+
 def _stat_index(items: list[dict]) -> dict[str, dict]:
     """Map right-rail teamGameStats list → {category: row}."""
     return {(it.get("category") or "").lower(): it for it in items or []}
@@ -390,6 +455,9 @@ async def get_game(client: httpx.AsyncClient, game_id: str) -> dict:
             series = _extract_series(landing)
             if series:
                 game["series"] = series
+            preview = _preview_from_landing(landing)
+            if preview:
+                game["preview"] = preview
         except Exception:
             pass
 
