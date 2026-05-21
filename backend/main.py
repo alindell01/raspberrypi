@@ -21,6 +21,16 @@ cache = TTLCache(ttl_seconds=5)
 KIOSK_SERVICE = os.getenv("SCOREBOARD_KIOSK_SERVICE", "scoreboard-kiosk")
 MIRROR_SERVICE = os.getenv("MAGICMIRROR_SERVICE", "magicmirror")
 
+# Full shell commands so users can plug in whatever fits their setup
+# (systemd, pm2, raw chromium-kiosk, etc.). Defaults use systemctl.
+KIOSK_START_CMD  = os.getenv("SCOREBOARD_KIOSK_START_CMD",  f"sudo -n systemctl start {KIOSK_SERVICE}")
+KIOSK_STOP_CMD   = os.getenv("SCOREBOARD_KIOSK_STOP_CMD",   f"sudo -n systemctl stop {KIOSK_SERVICE}")
+KIOSK_ACTIVE_CMD = os.getenv("SCOREBOARD_KIOSK_ACTIVE_CMD", f"sudo -n systemctl is-active {KIOSK_SERVICE}")
+
+MIRROR_START_CMD  = os.getenv("MAGICMIRROR_START_CMD",  f"sudo -n systemctl start {MIRROR_SERVICE}")
+MIRROR_STOP_CMD   = os.getenv("MAGICMIRROR_STOP_CMD",   f"sudo -n systemctl stop {MIRROR_SERVICE}")
+MIRROR_ACTIVE_CMD = os.getenv("MAGICMIRROR_ACTIVE_CMD", f"sudo -n systemctl is-active {MIRROR_SERVICE}")
+
 
 class ConfigUpdate(BaseModel):
     league: str | None = None
@@ -139,6 +149,38 @@ def _systemctl_is_active(service: str) -> bool:
         return False
 
 
+def _run_shell(cmd: str, timeout: int = 15) -> tuple[bool, str]:
+    """Run a configured display-control shell command. Returns (ok, msg)."""
+    if not cmd:
+        return True, ""
+    try:
+        result = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, timeout=timeout,
+        )
+        if result.returncode == 0:
+            return True, ""
+        return False, (result.stderr or result.stdout).strip()
+    except subprocess.TimeoutExpired:
+        return False, "command timed out"
+    except OSError as e:
+        return False, str(e)
+
+
+def _is_active(check_cmd: str) -> bool:
+    if not check_cmd:
+        return False
+    try:
+        result = subprocess.run(
+            check_cmd, shell=True, capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode != 0:
+            return False
+        out = (result.stdout or "").strip().lower()
+        return out == "active" or out.startswith("active")
+    except (subprocess.TimeoutExpired, OSError):
+        return False
+
+
 def _run_systemctl(action: str, service: str) -> tuple[bool, str]:
     """Returns (success, message). Tries sudo systemctl first."""
     systemctl = shutil.which("systemctl") or "/bin/systemctl"
@@ -157,8 +199,8 @@ def _run_systemctl(action: str, service: str) -> tuple[bool, str]:
 @app.get("/api/display")
 async def get_display():
     return {
-        "scoreboard": _systemctl_is_active(KIOSK_SERVICE),
-        "mirror":     _systemctl_is_active(MIRROR_SERVICE),
+        "scoreboard":     _is_active(KIOSK_ACTIVE_CMD),
+        "mirror":         _is_active(MIRROR_ACTIVE_CMD),
         "kiosk_service":  KIOSK_SERVICE,
         "mirror_service": MIRROR_SERVICE,
     }
@@ -168,17 +210,17 @@ async def get_display():
 async def switch_display(req: DisplaySwitch):
     target = (req.target or "").lower()
     if target == "scoreboard":
-        stop_svc, start_svc = MIRROR_SERVICE, KIOSK_SERVICE
+        stop_cmd, start_cmd = MIRROR_STOP_CMD, KIOSK_START_CMD
     elif target == "mirror":
-        stop_svc, start_svc = KIOSK_SERVICE, MIRROR_SERVICE
+        stop_cmd, start_cmd = KIOSK_STOP_CMD, MIRROR_START_CMD
     else:
         raise HTTPException(400, "target must be 'scoreboard' or 'mirror'")
 
-    _run_systemctl("stop", stop_svc)  # ignore stop failures (svc may be missing)
-    ok, msg = _run_systemctl("start", start_svc)
+    _run_shell(stop_cmd)  # tolerate stop failures - target may not be running
+    ok, msg = _run_shell(start_cmd)
     if not ok:
-        raise HTTPException(500, f"Failed to start {start_svc}: {msg}")
-    return {"target": target, "stopped": stop_svc, "started": start_svc}
+        raise HTTPException(500, f"Failed to start {target}: {msg}")
+    return {"target": target}
 
 
 @app.get("/control")

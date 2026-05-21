@@ -918,6 +918,27 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .fs-btn:hover { opacity: 1; }
 
+.mirror-btn {
+  position: fixed;
+  top: 1vh;
+  right: 4.2rem;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  opacity: 0.15;
+  transition: opacity 0.2s;
+}
+
+.mirror-btn:hover { opacity: 1; }
+
 /* Pulse animation when score changes */
 .team-score.pulse { animation: score-pulse 0.9s ease-out; }
 

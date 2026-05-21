@@ -894,6 +894,15 @@ document.addEventListener('DOMContentLoaded', () => {
     stopScoreboard();
     pushKioskConfig({ running: false });
   });
+  $('to-mirror').addEventListener('click', async () => {
+    try {
+      await fetch('/api/display', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: 'mirror' }),
+      });
+    } catch {}
+  });
   $('fullscreen').addEventListener('click', toggleFullscreen);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
