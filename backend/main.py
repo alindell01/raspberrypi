@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import subprocess
@@ -9,6 +10,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger("scoreboard.display")
 
 from backend.cache import TTLCache
 from backend.providers import nfl, nhl
@@ -30,6 +34,10 @@ KIOSK_ACTIVE_CMD = os.getenv("SCOREBOARD_KIOSK_ACTIVE_CMD", f"sudo -n systemctl 
 MIRROR_START_CMD  = os.getenv("MAGICMIRROR_START_CMD",  f"sudo -n systemctl start {MIRROR_SERVICE}")
 MIRROR_STOP_CMD   = os.getenv("MAGICMIRROR_STOP_CMD",   f"sudo -n systemctl stop {MIRROR_SERVICE}")
 MIRROR_ACTIVE_CMD = os.getenv("MAGICMIRROR_ACTIVE_CMD", f"sudo -n systemctl is-active {MIRROR_SERVICE}")
+
+
+def _chromium_bin() -> str:
+    return shutil.which("chromium-browser") or shutil.which("chromium") or "chromium-browser"
 
 
 class ConfigUpdate(BaseModel):
@@ -153,16 +161,22 @@ def _run_shell(cmd: str, timeout: int = 15) -> tuple[bool, str]:
     """Run a configured display-control shell command. Returns (ok, msg)."""
     if not cmd:
         return True, ""
+    log.info("display cmd: %s", cmd)
     try:
         result = subprocess.run(
             cmd, shell=True, capture_output=True, text=True, timeout=timeout,
         )
+        out = (result.stderr or result.stdout).strip()
         if result.returncode == 0:
+            log.info("display cmd ok (rc=0) stdout=%r", result.stdout.strip())
             return True, ""
-        return False, (result.stderr or result.stdout).strip()
+        log.warning("display cmd failed rc=%d: %s", result.returncode, out)
+        return False, out
     except subprocess.TimeoutExpired:
+        log.warning("display cmd timed out: %s", cmd)
         return False, "command timed out"
     except OSError as e:
+        log.warning("display cmd OSError: %s", e)
         return False, str(e)
 
 
@@ -206,6 +220,34 @@ async def get_display():
     }
 
 
+@app.get("/api/display/test")
+async def test_display():
+    """Diagnostic: run all display commands and return their raw output."""
+    def probe(label: str, cmd: str) -> dict:
+        if not cmd:
+            return {"cmd": cmd, "ok": None, "out": "(not configured)"}
+        try:
+            r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=8)
+            return {
+                "cmd": cmd,
+                "rc": r.returncode,
+                "stdout": r.stdout.strip(),
+                "stderr": r.stderr.strip(),
+            }
+        except Exception as e:
+            return {"cmd": cmd, "error": str(e)}
+
+    return {
+        "chromium_bin": _chromium_bin(),
+        "kiosk_active":  probe("kiosk_active",  KIOSK_ACTIVE_CMD),
+        "mirror_active": probe("mirror_active",  MIRROR_ACTIVE_CMD),
+        "kiosk_stop":    probe("kiosk_stop",     KIOSK_STOP_CMD),
+        "kiosk_start":   probe("kiosk_start",    KIOSK_START_CMD),
+        "mirror_stop":   probe("mirror_stop",    MIRROR_STOP_CMD),
+        "mirror_start":  probe("mirror_start",   MIRROR_START_CMD),
+    }
+
+
 @app.post("/api/display")
 async def switch_display(req: DisplaySwitch):
     target = (req.target or "").lower()
@@ -216,11 +258,11 @@ async def switch_display(req: DisplaySwitch):
     else:
         raise HTTPException(400, "target must be 'scoreboard' or 'mirror'")
 
-    _run_shell(stop_cmd)  # tolerate stop failures - target may not be running
+    stop_ok, stop_msg = _run_shell(stop_cmd)
     ok, msg = _run_shell(start_cmd)
     if not ok:
         raise HTTPException(500, f"Failed to start {target}: {msg}")
-    return {"target": target}
+    return {"target": target, "stop_ok": stop_ok, "stop_msg": stop_msg}
 
 
 @app.get("/control")
