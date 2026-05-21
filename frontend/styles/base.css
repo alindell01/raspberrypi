@@ -429,11 +429,14 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
 .team-leader .lead-photo {
   grid-row: 1 / span 2;
   grid-column: 1;
-  width: 6vh;
-  height: 6vh;
+  width: 6.5vh;
+  height: 6.5vh;
+  max-width: none;
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   object-fit: cover;
-  object-position: center top;
+  object-position: center 20%;
   background: rgba(255,255,255,0.06);
   border: 0.2vh solid currentColor;
 }
