@@ -1,5 +1,6 @@
 import logging
 import os
+import shlex
 import shutil
 import subprocess
 from contextlib import asynccontextmanager
@@ -25,19 +26,73 @@ cache = TTLCache(ttl_seconds=5)
 KIOSK_SERVICE = os.getenv("SCOREBOARD_KIOSK_SERVICE", "scoreboard-kiosk")
 MIRROR_SERVICE = os.getenv("MAGICMIRROR_SERVICE", "magicmirror")
 
-# Full shell commands so users can plug in whatever fits their setup
-# (systemd, pm2, raw chromium-kiosk, etc.). Defaults use systemctl.
-KIOSK_START_CMD  = os.getenv("SCOREBOARD_KIOSK_START_CMD",  f"sudo -n systemctl start {KIOSK_SERVICE}")
-KIOSK_STOP_CMD   = os.getenv("SCOREBOARD_KIOSK_STOP_CMD",   f"sudo -n systemctl stop {KIOSK_SERVICE}")
-KIOSK_ACTIVE_CMD = os.getenv("SCOREBOARD_KIOSK_ACTIVE_CMD", f"sudo -n systemctl is-active {KIOSK_SERVICE}")
-
-MIRROR_START_CMD  = os.getenv("MAGICMIRROR_START_CMD",  f"sudo -n systemctl start {MIRROR_SERVICE}")
-MIRROR_STOP_CMD   = os.getenv("MAGICMIRROR_STOP_CMD",   f"sudo -n systemctl stop {MIRROR_SERVICE}")
-MIRROR_ACTIVE_CMD = os.getenv("MAGICMIRROR_ACTIVE_CMD", f"sudo -n systemctl is-active {MIRROR_SERVICE}")
+SCOREBOARD_URL  = os.getenv("SCOREBOARD_URL",  "http://localhost:8000")
+MAGICMIRROR_URL = os.getenv("MAGICMIRROR_URL", "http://localhost:8080")
 
 
 def _chromium_bin() -> str:
     return shutil.which("chromium-browser") or shutil.which("chromium") or "chromium-browser"
+
+
+def _service_exists(name: str) -> bool:
+    systemctl = shutil.which("systemctl")
+    if not systemctl:
+        return False
+    try:
+        r = subprocess.run(
+            [systemctl, "list-unit-files", f"{name}.service", "--no-legend"],
+            capture_output=True, text=True, timeout=5,
+        )
+        return bool(r.stdout.strip())
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def _chromium_start_cmd(url: str) -> str:
+    chrome = _chromium_bin()
+    return (
+        f"bash -c 'DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority "
+        f"nohup {chrome} --kiosk --noerrdialogs --disable-infobars "
+        f"--no-first-run --check-for-update-interval=31536000 "
+        f"{url} >/tmp/scoreboard-chromium.log 2>&1 &'"
+    )
+
+
+def _chromium_kill_cmd(url: str) -> str:
+    return f"pkill -f {shlex.quote(url)}"
+
+
+def _chromium_active_cmd(url: str) -> str:
+    return f"pgrep -f {shlex.quote(url)} >/dev/null && echo active"
+
+
+def _defaults_for(service: str, url: str) -> tuple[str, str, str]:
+    """(start, stop, active) — systemd if service exists, else chromium-kiosk."""
+    if _service_exists(service):
+        return (
+            f"sudo -n systemctl start {service}",
+            f"sudo -n systemctl stop {service}",
+            f"sudo -n systemctl is-active {service}",
+        )
+    return (
+        _chromium_start_cmd(url),
+        _chromium_kill_cmd(url),
+        _chromium_active_cmd(url),
+    )
+
+
+_kiosk_start_d,  _kiosk_stop_d,  _kiosk_active_d  = _defaults_for(KIOSK_SERVICE,  SCOREBOARD_URL)
+_mirror_start_d, _mirror_stop_d, _mirror_active_d = _defaults_for(MIRROR_SERVICE, MAGICMIRROR_URL)
+
+# Full shell commands so users can plug in whatever fits their setup
+# (systemd, pm2, raw chromium-kiosk, etc.).
+KIOSK_START_CMD  = os.getenv("SCOREBOARD_KIOSK_START_CMD",  _kiosk_start_d)
+KIOSK_STOP_CMD   = os.getenv("SCOREBOARD_KIOSK_STOP_CMD",   _kiosk_stop_d)
+KIOSK_ACTIVE_CMD = os.getenv("SCOREBOARD_KIOSK_ACTIVE_CMD", _kiosk_active_d)
+
+MIRROR_START_CMD  = os.getenv("MAGICMIRROR_START_CMD",  _mirror_start_d)
+MIRROR_STOP_CMD   = os.getenv("MAGICMIRROR_STOP_CMD",   _mirror_stop_d)
+MIRROR_ACTIVE_CMD = os.getenv("MAGICMIRROR_ACTIVE_CMD", _mirror_active_d)
 
 
 class ConfigUpdate(BaseModel):
