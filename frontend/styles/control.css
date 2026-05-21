@@ -135,6 +135,41 @@ html, body {
   border-color: rgba(255,255,255,0.15);
 }
 
+.display-toggle { margin-top: 1.4rem; }
+
+.seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 0.7rem;
+  padding: 0.3rem;
+}
+
+.seg-btn {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.7rem 0.6rem;
+  min-height: 2.8rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  border: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.seg-btn.active {
+  background: rgba(255,184,28,0.18);
+  color: #FFB81C;
+  box-shadow: inset 0 0 0 1px rgba(255,184,28,0.45);
+}
+
+.seg-btn:active { transform: scale(0.985); }
+
 .hint {
   margin-top: 1rem;
   text-align: center;

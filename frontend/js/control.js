@@ -140,7 +140,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('show').addEventListener('click', onShow);
   $('stop').addEventListener('click', onStop);
 
+  document.querySelectorAll('#display-seg .seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchDisplay(btn.dataset.display));
+  });
+  refreshDisplayState();
+
   // Light-touch poll so the "now showing" header stays accurate when the
   // TV is also driven locally or from another device.
   setInterval(pullConfig, 2000);
+  setInterval(refreshDisplayState, 5000);
 });
+
+async function refreshDisplayState() {
+  try {
+    const r = await fetch('/api/display');
+    if (!r.ok) return;
+    const data = await r.json();
+    const active = data.scoreboard ? 'scoreboard'
+                 : data.mirror     ? 'mirror'
+                 : null;
+    document.querySelectorAll('#display-seg .seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.display === active);
+    });
+  } catch {}
+}
+
+async function switchDisplay(target) {
+  setHint('Switching display…');
+  try {
+    const r = await fetch('/api/display', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target }),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      setHint(`Switch failed: ${err.detail || r.statusText}`, 'error');
+      return;
+    }
+    setHint(target === 'scoreboard' ? 'Switched to Scoreboard.' : 'Switched to MagicMirror.', 'ok');
+    refreshDisplayState();
+  } catch (err) {
+    setHint(`Switch failed: ${err.message}`, 'error');
+  }
+}

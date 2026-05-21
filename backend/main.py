@@ -1,3 +1,6 @@
+import os
+import shutil
+import subprocess
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -15,6 +18,9 @@ FRONTEND = ROOT / "frontend"
 
 cache = TTLCache(ttl_seconds=5)
 
+KIOSK_SERVICE = os.getenv("SCOREBOARD_KIOSK_SERVICE", "scoreboard-kiosk")
+MIRROR_SERVICE = os.getenv("MAGICMIRROR_SERVICE", "magicmirror")
+
 
 class ConfigUpdate(BaseModel):
     league: str | None = None
@@ -23,6 +29,10 @@ class ConfigUpdate(BaseModel):
     theme: str | None = None
     delay_seconds: int | None = None
     running: bool | None = None
+
+
+class DisplaySwitch(BaseModel):
+    target: str  # "scoreboard" or "mirror"
 
 
 _config_state = {
@@ -113,6 +123,62 @@ async def set_config(update: ConfigUpdate):
         _config_state["config"][key] = value
     _config_state["version"] += 1
     return _config_state
+
+
+def _systemctl_is_active(service: str) -> bool:
+    systemctl = shutil.which("systemctl")
+    if not systemctl:
+        return False
+    try:
+        result = subprocess.run(
+            [systemctl, "is-active", service],
+            capture_output=True, text=True, timeout=5,
+        )
+        return result.stdout.strip() == "active"
+    except (subprocess.TimeoutExpired, OSError):
+        return False
+
+
+def _run_systemctl(action: str, service: str) -> tuple[bool, str]:
+    """Returns (success, message). Tries sudo systemctl first."""
+    systemctl = shutil.which("systemctl") or "/bin/systemctl"
+    cmd = ["sudo", "-n", systemctl, action, service]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+        if result.returncode == 0:
+            return True, ""
+        return False, (result.stderr or result.stdout).strip()
+    except subprocess.TimeoutExpired:
+        return False, "systemctl timed out"
+    except OSError as e:
+        return False, str(e)
+
+
+@app.get("/api/display")
+async def get_display():
+    return {
+        "scoreboard": _systemctl_is_active(KIOSK_SERVICE),
+        "mirror":     _systemctl_is_active(MIRROR_SERVICE),
+        "kiosk_service":  KIOSK_SERVICE,
+        "mirror_service": MIRROR_SERVICE,
+    }
+
+
+@app.post("/api/display")
+async def switch_display(req: DisplaySwitch):
+    target = (req.target or "").lower()
+    if target == "scoreboard":
+        stop_svc, start_svc = MIRROR_SERVICE, KIOSK_SERVICE
+    elif target == "mirror":
+        stop_svc, start_svc = KIOSK_SERVICE, MIRROR_SERVICE
+    else:
+        raise HTTPException(400, "target must be 'scoreboard' or 'mirror'")
+
+    _run_systemctl("stop", stop_svc)  # ignore stop failures (svc may be missing)
+    ok, msg = _run_systemctl("start", start_svc)
+    if not ok:
+        raise HTTPException(500, f"Failed to start {start_svc}: {msg}")
+    return {"target": target, "stopped": stop_svc, "started": start_svc}
 
 
 @app.get("/control")

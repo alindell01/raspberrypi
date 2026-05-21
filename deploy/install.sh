@@ -39,6 +39,18 @@ sudo systemctl daemon-reload
 sudo systemctl enable scoreboard-backend.service scoreboard-kiosk.service
 rm -rf "$TMP"
 
+# Allow the backend (running as $RUN_USER) to start/stop the kiosk and
+# MagicMirror via passwordless sudo so the /control page can swap which
+# app owns the TV display. Service names default to scoreboard-kiosk
+# and magicmirror; override with SCOREBOARD_KIOSK_SERVICE and
+# MAGICMIRROR_SERVICE env vars in the backend unit if yours differ.
+echo "==> Installing sudoers entry for display swap"
+SUDOERS_FILE=/etc/sudoers.d/scoreboard-display
+sudo tee "$SUDOERS_FILE" >/dev/null <<EOF
+$RUN_USER ALL=(ALL) NOPASSWD: /bin/systemctl start scoreboard-kiosk, /bin/systemctl stop scoreboard-kiosk, /bin/systemctl restart scoreboard-kiosk, /bin/systemctl is-active scoreboard-kiosk, /bin/systemctl start magicmirror, /bin/systemctl stop magicmirror, /bin/systemctl restart magicmirror, /bin/systemctl is-active magicmirror
+EOF
+sudo chmod 0440 "$SUDOERS_FILE"
+
 cat <<EOF
 
 ==> Done.
