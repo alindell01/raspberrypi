@@ -1,71 +1,142 @@
-/* Vintage Memorial Auditorium theme - DRAFT.
-   Refined visual styling will come once we have more reference photos
-   of the Aud's bulb-style numerals, panel colors, and label fonts.
-   For now this is a dark stage that reveals the rafters banners. */
+/* Vintage Memorial Auditorium theme.
+   Mimics the boxy hanging Aud scoreboard: deep navy panel face, amber
+   bulb numerals on a white-bordered score box, white block-letter labels,
+   and yellow sponsor-style stripes top and bottom. */
 
 #scoreboard {
-  background:
-    radial-gradient(ellipse at 50% 35%, #1a1208 0%, #0a0604 60%, #000 100%);
-  color: #ffb347;
+  background: #050507;
+  color: #f5f1e6;
 }
 
-.ribbon {
-  background: linear-gradient(to bottom, #050301 0%, #1a1208 50%, #050301 100%);
-  color: #ffb347;
-  border-top: 2px solid #6b4a14;
-  border-bottom: 2px solid #6b4a14;
-  text-transform: uppercase;
-  box-shadow:
-    inset 0 0 24px rgba(255, 179, 71, 0.10),
-    0 0 6px rgba(255, 179, 71, 0.20);
-}
-
-/* Reveal the rafters between the top ribbon and the board. */
+/* Reveal the rafters above the scoreboard panel. */
 #scoreboard .rafters {
   display: flex;
 }
 
-.team-name { color: #f5f1e6; }
+/* Top and bottom ribbons become yellow sponsor stripes like the
+   "Flavor!" / "Fleet Bank" banners on the real Aud scoreboard. */
+.ribbon {
+  background: #ffcf1a;
+  color: #002654;
+  border-top: 0.4vh solid #002654;
+  border-bottom: 0.4vh solid #002654;
+}
+.ribbon-track {
+  font-weight: 900;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
 
+/* The board itself is the navy face of the cube. */
+.board {
+  background:
+    linear-gradient(to bottom, #0d2f6e 0%, #0a2456 40%, #061844 100%);
+  border-top: 0.6vh solid #ffcf1a;
+  border-bottom: 0.6vh solid #ffcf1a;
+  box-shadow:
+    inset 0 0 6vh rgba(0, 0, 0, 0.45),
+    inset 0 0 0 0.3vh rgba(0, 0, 0, 0.35);
+}
+
+/* Block-letter team names like BUFFALO / SABRES on the photos. */
+.team-name {
+  color: #f5f1e6;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0.2vh 0.4vh rgba(0, 0, 0, 0.6);
+}
+
+/* Amber bulb-style numerals framed by a white-bordered score box. */
 .team-score {
-  color: #ffb347;
+  color: #ffa726;
+  font-family: 'Courier New', 'Lucida Console', monospace;
+  font-weight: 900;
+  background:
+    radial-gradient(ellipse at center, #07112d 0%, #030814 100%);
+  border: 0.45vh solid #f5f1e6;
+  border-radius: 0.6vh;
+  padding: 0 2vw;
+  min-width: 14vh;
+  text-align: center;
   text-shadow:
-    0 0 14px rgba(255, 179, 71, 0.55),
-    0 0 28px rgba(255, 179, 71, 0.25);
+    0 0 1.4vh rgba(255, 167, 38, 0.95),
+    0 0 3vh  rgba(255, 140, 0, 0.55),
+    0 0 5vh  rgba(255, 120, 0, 0.3);
 }
 
-.period { color: #f5f1e6; }
-
+/* Clock + period in the same amber bulb style. */
 .clock {
-  color: #ffb347;
-  text-shadow: 0 0 12px rgba(255, 179, 71, 0.45);
+  color: #ffa726;
+  font-family: 'Courier New', 'Lucida Console', monospace;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 0 1.2vh rgba(255, 167, 38, 0.95),
+    0 0 2.4vh rgba(255, 140, 0, 0.5);
 }
 
-.status    { color: rgba(245, 241, 230, 0.65); }
-.last-play { color: rgba(245, 241, 230, 0.80); }
-.team-extra { color: #d6c8a8; }
+.period {
+  color: #ffa726;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: 0 0 1vh rgba(255, 167, 38, 0.6);
+}
 
-.team-record { color: #d6c8a8; }
-.team-goalie { color: #ffb347; }
-.team-stats .s .v { color: #f5f1e6; }
-.team-stats .s .l { color: rgba(255, 179, 71, 0.85); }
-.team-leader { color: #ffb347; }
+/* Static label text in cream/white, like PERIOD / TIME / PLAYER PENALTY. */
+.status     { color: rgba(245, 241, 230, 0.85); letter-spacing: 0.06em; }
+.last-play  { color: rgba(245, 241, 230, 0.80); }
+.team-extra { color: #d8ceb8; }
+.team-record { color: #d8ceb8; }
+
+.team-goalie {
+  color: #ffa726;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 0 0.8vh rgba(255, 167, 38, 0.55);
+}
+
+/* Side-rail stats: amber values, white labels. */
+.team-stats .s .v {
+  color: #ffa726;
+  font-family: 'Courier New', 'Lucida Console', monospace;
+  text-shadow: 0 0 0.8vh rgba(255, 167, 38, 0.55);
+}
+.team-stats .s .l {
+  color: #f5f1e6;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+}
+.rail-column {
+  border-color: #ffcf1a !important;
+}
+
+.team-leader { color: #ffa726; }
 .team-leader .lead-player { color: #f5f1e6; }
-.team-leader .lead-value  { color: #ffb347; }
+.team-leader .lead-value  {
+  color: #ffa726;
+  font-family: 'Courier New', 'Lucida Console', monospace;
+  text-shadow: 0 0 0.8vh rgba(255, 167, 38, 0.55);
+}
 
-.arena-banner { border-color: #6b4a14; }
+.arena-banner { border-color: #ffcf1a; }
 .arena-name   { color: #f5f1e6; }
-.series-badge { color: #ffb347; }
+.series-badge { color: #ffcf1a; }
 
-.power-play { color: #ffb347; background: rgba(255, 179, 71, 0.08); }
+.power-play {
+  color: #ffa726;
+  background: rgba(255, 167, 38, 0.12);
+  text-shadow: 0 0 0.8vh rgba(255, 167, 38, 0.55);
+}
 
 .line-score          { color: #f5f1e6; }
-.line-score th       { color: #ffb347; }
-.line-score td.total { color: #ffb347; }
+.line-score th       { color: #ffa726; }
+.line-score td.total { color: #ffa726; }
 
-.celebration svg { color: rgba(255, 179, 71, 0.9); }
+.celebration svg { color: rgba(255, 167, 38, 0.9); }
 @keyframes celebration-flash {
-  0%   { opacity: 0; background: radial-gradient(circle at center, rgba(255,179,71,0) 0%, rgba(255,179,71,0) 100%); }
-  10%  { opacity: 1; background: radial-gradient(circle at center, rgba(255,179,71,0.45) 0%, rgba(255,179,71,0) 70%); }
-  100% { opacity: 0; background: radial-gradient(circle at center, rgba(255,179,71,0) 0%, rgba(255,179,71,0) 100%); }
+  0%   { opacity: 0; background: radial-gradient(circle at center, rgba(255,167,38,0) 0%, rgba(255,167,38,0) 100%); }
+  10%  { opacity: 1; background: radial-gradient(circle at center, rgba(255,167,38,0.45) 0%, rgba(255,167,38,0) 70%); }
+  100% { opacity: 0; background: radial-gradient(circle at center, rgba(255,167,38,0) 0%, rgba(255,167,38,0) 100%); }
 }
