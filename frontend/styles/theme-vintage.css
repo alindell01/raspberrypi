@@ -41,16 +41,21 @@
 /* Block-letter team names like BUFFALO / SABRES on the photos. */
 .team-name {
   color: #f5f1e6;
-  font-weight: 900;
-  letter-spacing: 0.18em;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-shadow: 0 0.2vh 0.4vh rgba(0, 0, 0, 0.6);
 }
 
-/* Amber bulb-style numerals framed by a white-bordered score box. */
+/* Amber bulb-style numerals framed by a white-bordered score box.
+   VT323 is a tall narrow display font, so bump the size up so the
+   single-digit scores still feel jumbotron-big. */
 .team-score {
   color: #ffa726;
-  font-family: 'Courier New', 'Lucida Console', monospace;
-  font-weight: 900;
+  font-family: 'VT323', 'Courier New', 'Lucida Console', monospace;
+  font-weight: 400;
+  font-size: 24vh;
+  line-height: 0.95;
   background:
     radial-gradient(ellipse at center, #07112d 0%, #030814 100%);
   border: 0.45vh solid #f5f1e6;
@@ -67,9 +72,10 @@
 /* Clock + period in the same amber bulb style. */
 .clock {
   color: #ffa726;
-  font-family: 'Courier New', 'Lucida Console', monospace;
-  font-weight: 900;
-  letter-spacing: 0.06em;
+  font-family: 'VT323', 'Courier New', 'Lucida Console', monospace;
+  font-weight: 400;
+  font-size: 14vh;
+  letter-spacing: 0.04em;
   text-shadow:
     0 0 1.2vh rgba(255, 167, 38, 0.95),
     0 0 2.4vh rgba(255, 140, 0, 0.5);
@@ -77,7 +83,8 @@
 
 .period {
   color: #ffa726;
-  font-weight: 900;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   text-shadow: 0 0 1vh rgba(255, 167, 38, 0.6);
@@ -100,23 +107,29 @@
 /* Side-rail stats: amber values, white labels. */
 .team-stats .s .v {
   color: #ffa726;
-  font-family: 'Courier New', 'Lucida Console', monospace;
+  font-family: 'VT323', 'Courier New', 'Lucida Console', monospace;
+  font-size: 1.25em;
   text-shadow: 0 0 0.8vh rgba(255, 167, 38, 0.55);
 }
 .team-stats .s .l {
   color: #f5f1e6;
-  font-weight: 800;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
   letter-spacing: 0.10em;
 }
 .rail-column {
   border-color: #ffcf1a !important;
 }
 
-.team-leader { color: #ffa726; }
+.team-leader {
+  color: #ffa726;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
+}
 .team-leader .lead-player { color: #f5f1e6; }
 .team-leader .lead-value  {
   color: #ffa726;
-  font-family: 'Courier New', 'Lucida Console', monospace;
+  font-family: 'VT323', 'Courier New', 'Lucida Console', monospace;
+  font-size: 1.25em;
   text-shadow: 0 0 0.8vh rgba(255, 167, 38, 0.55);
 }
 
