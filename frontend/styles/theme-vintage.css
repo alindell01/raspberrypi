@@ -1,7 +1,8 @@
 /* Vintage Memorial Auditorium theme.
-   Mimics the boxy hanging Aud scoreboard: deep navy panel face, amber
-   bulb numerals on a white-bordered score box, white block-letter labels,
-   and yellow sponsor-style stripes top and bottom. */
+   Mimics the boxy hanging Aud scoreboard: teal-navy panel face, dot-matrix
+   LED digits (amber Doto) for scores / clock / stats, dot-matrix RED Doto
+   for period and penalty indicators, white block-letter labels, and yellow
+   sponsor-style stripes top and bottom. */
 
 #scoreboard {
   background: #050507;
@@ -13,8 +14,7 @@
   display: flex;
 }
 
-/* Top and bottom ribbons become yellow sponsor stripes like the
-   "Flavor!" / "Fleet Bank" banners on the real Aud scoreboard. */
+/* Top and bottom ribbons become yellow sponsor stripes. */
 .ribbon {
   background: #ffcf1a;
   color: #002654;
@@ -22,72 +22,92 @@
   border-bottom: 0.4vh solid #002654;
 }
 .ribbon-track {
-  font-weight: 900;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
   letter-spacing: 0.10em;
   text-transform: uppercase;
 }
 
-/* The board itself is the navy face of the cube. */
+/* Weathered teal-navy panel face, like the photo. */
 .board {
   background:
-    linear-gradient(to bottom, #0d2f6e 0%, #0a2456 40%, #061844 100%);
+    linear-gradient(to bottom, #2a4a64 0%, #1d3a54 45%, #122c44 100%);
   border-top: 0.6vh solid #ffcf1a;
   border-bottom: 0.6vh solid #ffcf1a;
   box-shadow:
-    inset 0 0 6vh rgba(0, 0, 0, 0.45),
-    inset 0 0 0 0.3vh rgba(0, 0, 0, 0.35);
+    inset 0 0 6vh rgba(0, 0, 0, 0.4),
+    inset 0 0 0 0.3vh rgba(0, 0, 0, 0.3);
 }
 
-/* Block-letter team names like BUFFALO / SABRES on the photos. */
+/* Amber block-letter team names like BUFFALO SABRES on the Aud sign. */
 .team-name {
-  color: #f5f1e6;
-  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-shadow: 0 0.2vh 0.4vh rgba(0, 0, 0, 0.6);
-}
-
-/* Amber bulb-style numerals framed by a white-bordered score box.
-   VT323 is a tall narrow display font, so bump the size up so the
-   single-digit scores still feel jumbotron-big. */
-.team-score {
-  color: #ffa726;
-  font-family: 'VT323', 'Courier New', 'Lucida Console', monospace;
-  font-weight: 400;
-  font-size: 24vh;
-  line-height: 0.95;
-  background:
-    radial-gradient(ellipse at center, #07112d 0%, #030814 100%);
-  border: 0.45vh solid #f5f1e6;
-  border-radius: 0.6vh;
-  padding: 0 2vw;
-  min-width: 14vh;
-  text-align: center;
-  text-shadow:
-    0 0 1.4vh rgba(255, 167, 38, 0.95),
-    0 0 3vh  rgba(255, 140, 0, 0.55),
-    0 0 5vh  rgba(255, 120, 0, 0.3);
-}
-
-/* Clock + period in the same amber bulb style. */
-.clock {
-  color: #ffa726;
-  font-family: 'VT323', 'Courier New', 'Lucida Console', monospace;
-  font-weight: 400;
-  font-size: 14vh;
-  letter-spacing: 0.04em;
-  text-shadow:
-    0 0 1.2vh rgba(255, 167, 38, 0.95),
-    0 0 2.4vh rgba(255, 140, 0, 0.5);
-}
-
-.period {
-  color: #ffa726;
+  color: #ffb347;
   font-family: 'Oswald', 'Inter', system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: 0.14em;
+  text-shadow:
+    0 0.2vh 0.4vh rgba(0, 0, 0, 0.6),
+    0 0 1.4vh rgba(255, 179, 71, 0.35);
+}
+
+/* Dot-matrix LED amber bulbs for the team scores. Doto renders each
+   character as glowing dots; weight 700 keeps the bulb cluster bright. */
+.team-score {
+  color: #ffd200;
+  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 22vh;
+  line-height: 1;
+  background:
+    radial-gradient(ellipse at center, #06101e 0%, #020611 100%);
+  border: 0.45vh solid #f5f1e6;
+  border-radius: 0.6vh;
+  padding: 1vh 2vw;
+  min-width: 14vh;
+  text-align: center;
+  text-shadow:
+    0 0 1.2vh rgba(255, 210, 0, 0.95),
+    0 0 2.6vh rgba(255, 170, 0, 0.55),
+    0 0 5vh   rgba(255, 140, 0, 0.3);
+}
+
+/* Clock in the same amber Doto. */
+.clock {
+  color: #ffd200;
+  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 13vh;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 1.1vh rgba(255, 210, 0, 0.95),
+    0 0 2.2vh rgba(255, 170, 0, 0.5);
+}
+
+/* Period: same dot-matrix font, RED bulbs. */
+.period {
+  color: #ff2a2a;
+  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  text-shadow: 0 0 1vh rgba(255, 167, 38, 0.6);
+  text-shadow:
+    0 0 1vh rgba(255, 42, 42, 0.95),
+    0 0 2.2vh rgba(220, 0, 0, 0.55);
+}
+
+/* Power play / penalty indicator: red dot-matrix bulbs. */
+.power-play {
+  color: #ff2a2a;
+  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-weight: 700;
+  background: rgba(255, 42, 42, 0.08);
+  text-shadow:
+    0 0 0.9vh rgba(255, 42, 42, 0.9),
+    0 0 2vh   rgba(220, 0, 0, 0.55);
+}
+.power-play .pp-time {
+  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-weight: 700;
 }
 
 /* Static label text in cream/white, like PERIOD / TIME / PLAYER PENALTY. */
@@ -97,19 +117,21 @@
 .team-record { color: #d8ceb8; }
 
 .team-goalie {
-  color: #ffa726;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  color: #ffd200;
+  font-family: 'Doto', 'VT323', monospace;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  text-shadow: 0 0 0.8vh rgba(255, 167, 38, 0.55);
+  text-shadow: 0 0 0.8vh rgba(255, 210, 0, 0.55);
 }
 
-/* Side-rail stats: amber values, white labels. */
+/* Side-rail stats: amber dot-matrix values, white Oswald labels. */
 .team-stats .s .v {
-  color: #ffa726;
-  font-family: 'VT323', 'Courier New', 'Lucida Console', monospace;
-  font-size: 1.25em;
-  text-shadow: 0 0 0.8vh rgba(255, 167, 38, 0.55);
+  color: #ffd200;
+  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 1.2em;
+  text-shadow: 0 0 0.8vh rgba(255, 210, 0, 0.55);
 }
 .team-stats .s .l {
   color: #f5f1e6;
@@ -122,34 +144,29 @@
 }
 
 .team-leader {
-  color: #ffa726;
+  color: #ffd200;
   font-family: 'Oswald', 'Inter', system-ui, sans-serif;
 }
 .team-leader .lead-player { color: #f5f1e6; }
 .team-leader .lead-value  {
-  color: #ffa726;
-  font-family: 'VT323', 'Courier New', 'Lucida Console', monospace;
-  font-size: 1.25em;
-  text-shadow: 0 0 0.8vh rgba(255, 167, 38, 0.55);
+  color: #ffd200;
+  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 1.2em;
+  text-shadow: 0 0 0.8vh rgba(255, 210, 0, 0.55);
 }
 
 .arena-banner { border-color: #ffcf1a; }
-.arena-name   { color: #f5f1e6; }
+.arena-name   { color: #ffb347; font-family: 'Oswald', sans-serif; }
 .series-badge { color: #ffcf1a; }
 
-.power-play {
-  color: #ffa726;
-  background: rgba(255, 167, 38, 0.12);
-  text-shadow: 0 0 0.8vh rgba(255, 167, 38, 0.55);
-}
-
 .line-score          { color: #f5f1e6; }
-.line-score th       { color: #ffa726; }
-.line-score td.total { color: #ffa726; }
+.line-score th       { color: #ffd200; font-family: 'Oswald', sans-serif; }
+.line-score td.total { color: #ffd200; font-family: 'Doto', monospace; font-weight: 700; }
 
-.celebration svg { color: rgba(255, 167, 38, 0.9); }
+.celebration svg { color: rgba(255, 210, 0, 0.9); }
 @keyframes celebration-flash {
-  0%   { opacity: 0; background: radial-gradient(circle at center, rgba(255,167,38,0) 0%, rgba(255,167,38,0) 100%); }
-  10%  { opacity: 1; background: radial-gradient(circle at center, rgba(255,167,38,0.45) 0%, rgba(255,167,38,0) 70%); }
-  100% { opacity: 0; background: radial-gradient(circle at center, rgba(255,167,38,0) 0%, rgba(255,167,38,0) 100%); }
+  0%   { opacity: 0; background: radial-gradient(circle at center, rgba(255,210,0,0) 0%, rgba(255,210,0,0) 100%); }
+  10%  { opacity: 1; background: radial-gradient(circle at center, rgba(255,210,0,0.45) 0%, rgba(255,210,0,0) 70%); }
+  100% { opacity: 0; background: radial-gradient(circle at center, rgba(255,210,0,0) 0%, rgba(255,210,0,0) 100%); }
 }
