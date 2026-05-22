@@ -277,10 +277,10 @@ async def get_display():
 
 @app.get("/api/display/test")
 async def test_display():
-    """Diagnostic: run all display commands and return their raw output."""
-    def probe(label: str, cmd: str) -> dict:
+    """Diagnostic: show configured commands, only execute the read-only active checks."""
+    def probe(cmd: str) -> dict:
         if not cmd:
-            return {"cmd": cmd, "ok": None, "out": "(not configured)"}
+            return {"cmd": cmd, "out": "(not configured)"}
         try:
             r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=8)
             return {
@@ -293,13 +293,15 @@ async def test_display():
             return {"cmd": cmd, "error": str(e)}
 
     return {
-        "chromium_bin": _chromium_bin(),
-        "kiosk_active":  probe("kiosk_active",  KIOSK_ACTIVE_CMD),
-        "mirror_active": probe("mirror_active",  MIRROR_ACTIVE_CMD),
-        "kiosk_stop":    probe("kiosk_stop",     KIOSK_STOP_CMD),
-        "kiosk_start":   probe("kiosk_start",    KIOSK_START_CMD),
-        "mirror_stop":   probe("mirror_stop",    MIRROR_STOP_CMD),
-        "mirror_start":  probe("mirror_start",   MIRROR_START_CMD),
+        "chromium_bin":  _chromium_bin(),
+        "kiosk_active":  probe(KIOSK_ACTIVE_CMD),
+        "mirror_active": probe(MIRROR_ACTIVE_CMD),
+        # The following are NOT executed - just shown for review. Use POST
+        # /api/display to actually run them.
+        "kiosk_stop":    {"cmd": KIOSK_STOP_CMD},
+        "kiosk_start":   {"cmd": KIOSK_START_CMD},
+        "mirror_stop":   {"cmd": MIRROR_STOP_CMD},
+        "mirror_start":  {"cmd": MIRROR_START_CMD},
     }
 
 
