@@ -64,7 +64,10 @@ function applyTheme(name) {
   const effective = choice === 'auto'
     ? (name === 'nfl' ? 'bills' : 'sabres')
     : choice;
-  $('theme-css').href = THEMES[effective] || THEMES.sabres;
+  const href = THEMES[effective] || THEMES.sabres;
+  // Cache-buster: forces chromium to re-fetch the theme stylesheet
+  // after we push CSS changes, instead of using the stale cached copy.
+  $('theme-css').href = `${href}?v=${Date.now()}`;
 }
 
 function showView(name) {
@@ -750,8 +753,19 @@ function applyScoreboard(g) {
     setTeamLogo($('home-logo'), g.home);
     setTeamLogo($('away-logo'), g.away);
 
-    $('period').textContent = g.period_label || (g.state === 'pre' ? (state.league === 'nfl' ? 'KICKOFF' : 'PUCK DROP') : '');
-    $('clock').textContent = renderClock(g);
+    const periodText = g.period_label || (g.state === 'pre' ? (state.league === 'nfl' ? 'KICKOFF' : 'PUCK DROP') : '');
+    const periodEl = $('period');
+    periodEl.textContent = periodText;
+    // "Digital" mode means the value is short numeric / period code that
+    // looks good in a dot-matrix font. Word labels (PUCK DROP, FINAL,
+    // INT, KICKOFF) stay in Oswald.
+    periodEl.classList.toggle('digital', /^(\d+(ST|ND|RD|TH)?|OT\d*|SO|Q\d|H\d)$/i.test(periodText));
+
+    const clockText = renderClock(g);
+    const clockEl   = $('clock');
+    clockEl.textContent = clockText;
+    clockEl.classList.toggle('digital', /^\d/.test(clockText) && !/[A-Za-z]/.test(clockText));
+
     $('status').textContent = g.venue || '';
 
     $('home-record').textContent = g.home.record || '';

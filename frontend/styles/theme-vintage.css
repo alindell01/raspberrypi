@@ -50,20 +50,22 @@
     0 0 1.4vh rgba(255, 179, 71, 0.35);
 }
 
-/* Dot-matrix LED amber bulbs for the team scores. Doto renders each
-   character as glowing dots; weight 700 keeps the bulb cluster bright. */
+/* Dot-matrix LED amber bulbs for the team scores. Weight 500 gives
+   well-separated dots; weight 700 blurs the cluster together. */
 .team-score {
   color: #ffd200;
   font-family: 'Doto', 'VT323', 'Courier New', monospace;
-  font-weight: 700;
-  font-size: 22vh;
+  font-weight: 500;
+  font-variation-settings: "ROND" 100;
+  font-size: 15vh;
   line-height: 1;
+  letter-spacing: 0.04em;
   background:
     radial-gradient(ellipse at center, #06101e 0%, #020611 100%);
   border: 0.45vh solid #f5f1e6;
   border-radius: 0.6vh;
-  padding: 1vh 2vw;
-  min-width: 14vh;
+  padding: 1.4vh 1.8vw;
+  min-width: 20vh;
   text-align: center;
   text-shadow:
     0 0 1.2vh rgba(255, 210, 0, 0.95),
@@ -71,43 +73,60 @@
     0 0 5vh   rgba(255, 140, 0, 0.3);
 }
 
-/* Clock in the same amber Doto. */
+/* Clock: amber Oswald for pre-game / FINAL / INT (text), amber Doto
+   only when it's truly a digital clock value. */
 .clock {
   color: #ffd200;
-  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
   font-weight: 700;
-  font-size: 13vh;
+  font-size: 10vh;
   letter-spacing: 0.04em;
+}
+.clock.digital {
+  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-weight: 500;
+  font-variation-settings: "ROND" 100;
+  font-size: 11vh;
   text-shadow:
     0 0 1.1vh rgba(255, 210, 0, 0.95),
     0 0 2.2vh rgba(255, 170, 0, 0.5);
 }
 
-/* Period: same dot-matrix font, RED bulbs. */
+/* Period: Oswald amber for word labels (PUCK DROP, FINAL); red Doto
+   only when the value is a numeric period like 1, OT, SO, Q1. */
 .period {
-  color: #ff2a2a;
-  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  color: #ffb347;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+.period.digital {
+  color: #ff2a2a;
+  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-weight: 500;
+  font-variation-settings: "ROND" 100;
   text-shadow:
     0 0 1vh rgba(255, 42, 42, 0.95),
     0 0 2.2vh rgba(220, 0, 0, 0.55);
 }
 
-/* Power play / penalty indicator: red dot-matrix bulbs. */
+/* Power play / penalty indicator. Label stays in Oswald; the countdown
+   value uses red Doto. */
 .power-play {
   color: #ff2a2a;
-  font-family: 'Doto', 'VT323', 'Courier New', monospace;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
   font-weight: 700;
   background: rgba(255, 42, 42, 0.08);
-  text-shadow:
-    0 0 0.9vh rgba(255, 42, 42, 0.9),
-    0 0 2vh   rgba(220, 0, 0, 0.55);
+  text-shadow: 0 0 0.6vh rgba(255, 42, 42, 0.4);
 }
 .power-play .pp-time {
   font-family: 'Doto', 'VT323', 'Courier New', monospace;
-  font-weight: 700;
+  font-weight: 500;
+  font-variation-settings: "ROND" 100;
+  text-shadow:
+    0 0 0.9vh rgba(255, 42, 42, 0.9),
+    0 0 2vh   rgba(220, 0, 0, 0.55);
 }
 
 /* Static label text in cream/white, like PERIOD / TIME / PLAYER PENALTY. */
