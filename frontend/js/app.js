@@ -27,6 +27,7 @@ const THEMES = {
   goathead: '/styles/theme-goathead.css',
   slug:     '/styles/theme-slug.css',
   bills:    '/styles/theme-bills.css',
+  vintage:  '/styles/theme-vintage.css',
   generic:  '/styles/theme-generic.css',
 };
 

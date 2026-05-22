@@ -259,6 +259,98 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   to   { transform: translateX(-100%); }
 }
 
+/* ---------- Rafters (retired-number banners) ----------
+   Hidden by default; revealed by themes that want them (e.g. vintage). */
+
+.rafters {
+  display: none;
+}
+
+#scoreboard .rafters {
+  /* Themes that show rafters set: display: flex; */
+  flex-direction: column;
+  align-items: center;
+  padding: 1vh 4vw 0;
+  gap: 0.6vh;
+  pointer-events: none;
+}
+
+.rafters-header {
+  display: flex;
+  align-items: center;
+  gap: 1.2vw;
+  background: #f5f1e6;
+  color: #002a5c;
+  padding: 0.6vh 2vw;
+  font-weight: 800;
+  font-size: 1.6vh;
+  letter-spacing: 0.12em;
+  box-shadow: 0 0.4vh 1.2vh rgba(0,0,0,0.55);
+  border-top: 2px solid #002a5c;
+  border-bottom: 2px solid #002a5c;
+}
+
+.rafters-emblem {
+  width: 2.4vh;
+  height: 2.4vh;
+  object-fit: contain;
+}
+
+.rafters-title {
+  white-space: nowrap;
+}
+
+.rafters-banners {
+  display: flex;
+  gap: 1.6vw;
+}
+
+.rafter-banner {
+  width: 6.4vw;
+  min-width: 7vh;
+  background: #f5f1e6;
+  color: #002a5c;
+  clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%);
+  padding: 0.6vh 0.4vw 2vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2vh;
+  box-shadow: 0 0.6vh 1.4vh rgba(0,0,0,0.55);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.banner-name {
+  font-size: 0.9vh;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-align: center;
+  line-height: 1.1;
+  min-height: 2vh;
+  display: flex;
+  align-items: center;
+}
+
+.banner-number {
+  font-size: 4.2vh;
+  font-weight: 900;
+  line-height: 1;
+  font-family: 'Georgia', serif;
+}
+
+.banner-years {
+  font-size: 0.75vh;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+}
+
+.banner-emblem {
+  width: 1.6vh;
+  height: 1.6vh;
+  margin-top: 0.2vh;
+  object-fit: contain;
+}
+
 /* 5 columns mimicking the jumbotron side panels:
    [away stat rail][away team][center][home team][home stat rail].
    Stats hug the outer page edges, scores hug the centre. */

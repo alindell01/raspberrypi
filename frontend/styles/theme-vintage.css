@@ -1,0 +1,71 @@
+/* Vintage Memorial Auditorium theme - DRAFT.
+   Refined visual styling will come once we have more reference photos
+   of the Aud's bulb-style numerals, panel colors, and label fonts.
+   For now this is a dark stage that reveals the rafters banners. */
+
+#scoreboard {
+  background:
+    radial-gradient(ellipse at 50% 35%, #1a1208 0%, #0a0604 60%, #000 100%);
+  color: #ffb347;
+}
+
+.ribbon {
+  background: linear-gradient(to bottom, #050301 0%, #1a1208 50%, #050301 100%);
+  color: #ffb347;
+  border-top: 2px solid #6b4a14;
+  border-bottom: 2px solid #6b4a14;
+  text-transform: uppercase;
+  box-shadow:
+    inset 0 0 24px rgba(255, 179, 71, 0.10),
+    0 0 6px rgba(255, 179, 71, 0.20);
+}
+
+/* Reveal the rafters between the top ribbon and the board. */
+#scoreboard .rafters {
+  display: flex;
+}
+
+.team-name { color: #f5f1e6; }
+
+.team-score {
+  color: #ffb347;
+  text-shadow:
+    0 0 14px rgba(255, 179, 71, 0.55),
+    0 0 28px rgba(255, 179, 71, 0.25);
+}
+
+.period { color: #f5f1e6; }
+
+.clock {
+  color: #ffb347;
+  text-shadow: 0 0 12px rgba(255, 179, 71, 0.45);
+}
+
+.status    { color: rgba(245, 241, 230, 0.65); }
+.last-play { color: rgba(245, 241, 230, 0.80); }
+.team-extra { color: #d6c8a8; }
+
+.team-record { color: #d6c8a8; }
+.team-goalie { color: #ffb347; }
+.team-stats .s .v { color: #f5f1e6; }
+.team-stats .s .l { color: rgba(255, 179, 71, 0.85); }
+.team-leader { color: #ffb347; }
+.team-leader .lead-player { color: #f5f1e6; }
+.team-leader .lead-value  { color: #ffb347; }
+
+.arena-banner { border-color: #6b4a14; }
+.arena-name   { color: #f5f1e6; }
+.series-badge { color: #ffb347; }
+
+.power-play { color: #ffb347; background: rgba(255, 179, 71, 0.08); }
+
+.line-score          { color: #f5f1e6; }
+.line-score th       { color: #ffb347; }
+.line-score td.total { color: #ffb347; }
+
+.celebration svg { color: rgba(255, 179, 71, 0.9); }
+@keyframes celebration-flash {
+  0%   { opacity: 0; background: radial-gradient(circle at center, rgba(255,179,71,0) 0%, rgba(255,179,71,0) 100%); }
+  10%  { opacity: 1; background: radial-gradient(circle at center, rgba(255,179,71,0.45) 0%, rgba(255,179,71,0) 70%); }
+  100% { opacity: 0; background: radial-gradient(circle at center, rgba(255,179,71,0) 0%, rgba(255,179,71,0) 100%); }
+}
