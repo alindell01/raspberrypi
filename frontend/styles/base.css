@@ -367,6 +367,41 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
   object-fit: contain;
 }
 
+/* ---------- Vintage sponsor strip ----------
+   Hidden by default; shown by the vintage Aud theme to mimic the
+   Genesee Beer / Iroquois Beer banners on top of the Aud cube. */
+
+.vintage-sponsors { display: none; }
+
+#scoreboard .vintage-sponsors {
+  /* Themes that show it set: display: flex; */
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0;
+  position: relative;
+  z-index: 2;
+}
+.sponsor {
+  flex: 0 0 auto;
+  min-width: 18vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6vh 2vw;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  border: 0.3vh solid #1a1208;
+}
+.sponsor-mark { font-size: 2.2vh; line-height: 1; }
+.sponsor-sub  { font-size: 1.2vh; font-style: italic; font-weight: 500; opacity: 0.92; margin-top: 0.2vh; }
+.sponsor-left  { background: #b41e22; color: #f5f1e6; border-right: 0; }
+.sponsor-right { background: #1d6b3a; color: #f5f1e6; }
+
 /* 5 columns mimicking the jumbotron side panels:
    [away stat rail][away team][center][home team][home stat rail].
    Stats hug the outer page edges, scores hug the centre. */

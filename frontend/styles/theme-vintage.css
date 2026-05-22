@@ -14,6 +14,54 @@
   display: flex;
 }
 
+/* Reveal the Genesee / Iroquois sponsor strip across the top of the
+   scoreboard panel, just like the photo. */
+#scoreboard .vintage-sponsors {
+  display: flex;
+}
+
+/* The Aud cube didn't have giant team logos - just the team names
+   painted on the panel. Hide the logos, hide the records / goalie /
+   venue clutter, and let the big block names + scores dominate. */
+.team-logo,
+.team-record,
+.team-goalie,
+.status,
+.last-play { display: none; }
+
+.team-name {
+  font-size: 5vh;
+  margin-bottom: 1vh;
+}
+
+/* TIME label below the clock. */
+.clock::after {
+  content: 'TIME';
+  display: block;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.8vh;
+  letter-spacing: 0.18em;
+  color: #f5f1e6;
+  text-shadow: none;
+  margin-top: 0.4vh;
+  -webkit-text-fill-color: #f5f1e6;
+}
+
+/* PERIOD label below the period number (only when in digital mode -
+   when we're showing a numeric period like 3, OT, SO). */
+.period.digital::after {
+  content: 'PERIOD';
+  display: block;
+  font-family: 'Oswald', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.6vh;
+  letter-spacing: 0.18em;
+  color: #f5f1e6;
+  text-shadow: none;
+  margin-top: 0.4vh;
+}
+
 /* Top and bottom ribbons become yellow sponsor stripes. */
 .ribbon {
   background: #ffcf1a;
