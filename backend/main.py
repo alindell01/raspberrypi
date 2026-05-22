@@ -50,16 +50,29 @@ def _service_exists(name: str) -> bool:
 
 def _chromium_start_cmd(url: str) -> str:
     chrome = _chromium_bin()
+    # Use a dedicated profile dir so this chromium launches as its own
+    # process and actually honors --kiosk even if another chromium
+    # (e.g. the scoreboard kiosk service) is still wrapping up.
+    profile = "/tmp/scoreboard-mm-chromium"
     return (
         f"bash -c 'DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority "
         f"nohup {chrome} --kiosk --noerrdialogs --disable-infobars "
         f"--no-first-run --check-for-update-interval=31536000 "
+        f"--user-data-dir={profile} "
+        f"--disable-session-crashed-bubble --disable-features=Translate "
         f"{url} >/tmp/scoreboard-chromium.log 2>&1 &'"
     )
 
 
 def _chromium_kill_cmd(url: str) -> str:
-    return f"pkill -f {shlex.quote(url)}"
+    # Match the dedicated profile path so we sweep up renderer/GPU
+    # subprocesses too, then fall back to URL match for chromiums
+    # launched outside this backend.
+    profile = "/tmp/scoreboard-mm-chromium"
+    return (
+        f"pkill -f {shlex.quote(profile)}; "
+        f"pkill -f {shlex.quote(url)}; true"
+    )
 
 
 def _chromium_active_cmd(url: str) -> str:
