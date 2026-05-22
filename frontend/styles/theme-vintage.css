@@ -34,17 +34,22 @@
   margin-bottom: 1vh;
 }
 
-/* TIME label below the clock. */
+/* TIME label below the clock box. Absolute so it sits outside the
+   recessed cavity, on the navy panel below the frame. */
+.clock { position: relative; }
 .clock::after {
   content: 'TIME';
-  display: block;
+  position: absolute;
+  top: calc(100% + 0.6vh);
+  left: 50%;
+  transform: translateX(-50%);
   font-family: 'Oswald', 'Inter', system-ui, sans-serif;
   font-weight: 700;
   font-size: 1.8vh;
   letter-spacing: 0.18em;
   color: #f5f1e6;
   text-shadow: none;
-  margin-top: 0.4vh;
+  white-space: nowrap;
   -webkit-text-fill-color: #f5f1e6;
 }
 
@@ -99,7 +104,10 @@
 }
 
 /* Dot-matrix LED amber bulbs for the team scores. Weight 500 gives
-   well-separated dots; weight 700 blurs the cluster together. */
+   well-separated dots; weight 700 blurs the cluster together.
+   The box reads as a recessed cavity in the painted panel: a white
+   "painted" border surrounds a dark interior, and a stacked inset
+   shadow at the top sells the depth. */
 .team-score {
   color: #ffd200;
   font-family: 'Doto', 'VT323', 'Courier New', monospace;
@@ -109,9 +117,9 @@
   line-height: 1;
   letter-spacing: 0.04em;
   background:
-    radial-gradient(ellipse at center, #06101e 0%, #020611 100%);
-  border: 0.45vh solid #f5f1e6;
-  border-radius: 0.6vh;
+    radial-gradient(ellipse at center, #050a16 0%, #01030a 100%);
+  border: 0.55vh solid #f5f1e6;
+  border-radius: 0.4vh;
   padding: 1.4vh 1.8vw;
   min-width: 20vh;
   text-align: center;
@@ -119,22 +127,45 @@
     0 0 1.2vh rgba(255, 210, 0, 0.95),
     0 0 2.6vh rgba(255, 170, 0, 0.55),
     0 0 5vh   rgba(255, 140, 0, 0.3);
+  box-shadow:
+    /* Deep cavity shadow from the top edge */
+    inset 0 0.8vh 1.6vh rgba(0, 0, 0, 0.85),
+    /* Subtle warm bounce light from the glowing bulbs at the bottom */
+    inset 0 -0.4vh 0.8vh rgba(255, 167, 38, 0.10),
+    /* Thin dark line under the white frame, like grime / wear in the
+       paint groove */
+    0 0 0 0.12vh rgba(0, 0, 0, 0.7),
+    /* Soft drop shadow so the cutout sits "in" the panel */
+    0 0.3vh 0.8vh rgba(0, 0, 0, 0.55);
 }
 
 /* Clock: amber Oswald for pre-game / FINAL / INT (text), amber Doto
-   only when it's truly a digital clock value. */
+   only when it's truly a digital clock value. Both modes share the
+   recessed white-bordered frame so the cavity is consistent. */
 .clock {
   color: #ffd200;
   font-family: 'Oswald', 'Inter', system-ui, sans-serif;
   font-weight: 700;
-  font-size: 10vh;
+  font-size: 9vh;
   letter-spacing: 0.04em;
+  background:
+    radial-gradient(ellipse at center, #050a16 0%, #01030a 100%);
+  border: 0.45vh solid #f5f1e6;
+  border-radius: 0.4vh;
+  padding: 0.6vh 1.4vw;
+  min-width: 14vh;
+  text-align: center;
+  box-shadow:
+    inset 0 0.6vh 1.2vh rgba(0, 0, 0, 0.8),
+    inset 0 -0.3vh 0.6vh rgba(255, 167, 38, 0.08),
+    0 0 0 0.1vh rgba(0, 0, 0, 0.65),
+    0 0.25vh 0.6vh rgba(0, 0, 0, 0.5);
 }
 .clock.digital {
   font-family: 'Doto', 'VT323', 'Courier New', monospace;
   font-weight: 500;
   font-variation-settings: "ROND" 100;
-  font-size: 11vh;
+  font-size: 10vh;
   text-shadow:
     0 0 1.1vh rgba(255, 210, 0, 0.95),
     0 0 2.2vh rgba(255, 170, 0, 0.5);
