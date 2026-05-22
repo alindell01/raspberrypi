@@ -255,6 +255,31 @@
       </svg>
     </div>
 
+    <div class="goal-splash" id="goal-splash" aria-hidden="true">
+      <div class="goal-splash-bg"></div>
+      <svg class="goal-emblem" viewBox="0 0 200 200" aria-hidden="true">
+        <g stroke="#f5f1e6" stroke-width="6" stroke-linecap="round" fill="#9aa3b5">
+          <g transform="rotate(-35 100 100)">
+            <line x1="35" y1="100" x2="160" y2="100" stroke-width="10"/>
+            <polygon points="160,90 178,100 160,110" fill="#f5f1e6" stroke="none"/>
+            <rect x="26" y="92" width="14" height="16" fill="#3a2618"/>
+            <rect x="38" y="86" width="6"  height="28" fill="#6b4a14"/>
+          </g>
+          <g transform="rotate(35 100 100)">
+            <line x1="35" y1="100" x2="160" y2="100" stroke-width="10"/>
+            <polygon points="160,90 178,100 160,110" fill="#f5f1e6" stroke="none"/>
+            <rect x="26" y="92" width="14" height="16" fill="#3a2618"/>
+            <rect x="38" y="86" width="6"  height="28" fill="#6b4a14"/>
+          </g>
+        </g>
+      </svg>
+      <div class="goal-text">GOAL!</div>
+    </div>
+
+    <audio id="goal-horn" preload="auto" playsinline>
+      <source src="/assets/sabres/goal-horn.mp3" type="audio/mpeg">
+    </audio>
+
     <button class="back-btn" id="back" title="Back (Esc)">&larr; Back</button>
     <button class="fs-btn" id="fullscreen" title="Fullscreen (F)" aria-label="Toggle fullscreen">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none"

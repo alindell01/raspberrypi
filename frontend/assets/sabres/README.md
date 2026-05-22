@@ -22,3 +22,11 @@ theme in the picker.
   ~512×512 is a safe size for the scoreboard's logo slot.
 - The logo only swaps for the away/home team panel where `abbrev == BUF`.
   The opponent always uses the NHL API logo.
+
+## Goal horn
+
+Drop an MP3 at `goal-horn.mp3` (this folder) and it'll play every time
+either team's score increments while the game state is `live`. No
+restart needed — just drop the file in and hard-refresh the browser.
+Tap `G` on a connected keyboard to test the splash + horn without
+waiting for a real goal.

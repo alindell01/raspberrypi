@@ -832,6 +832,88 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .crossed-sabres { display: none; }
 
+/* Big GOAL splash that fires on a score change during live play.
+   Mimics the KeyBank Center jumbotron: yellow burst, crossed sabres
+   behind, massive blue GOAL text. */
+
+.goal-splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 10;
+}
+
+.goal-splash-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center,
+      #FCB514 0%,
+      #e89e08 45%,
+      rgba(184, 120, 0, 0.85) 75%,
+      rgba(0, 0, 0, 0.6) 100%);
+  opacity: 0;
+}
+
+.goal-emblem {
+  position: absolute;
+  width: 70vh;
+  height: 70vh;
+  opacity: 0;
+  filter: drop-shadow(0 0 3vh rgba(0, 0, 0, 0.45));
+}
+
+.goal-text {
+  position: relative;
+  font-family: 'Oswald', 'Impact', 'Arial Black', sans-serif;
+  font-size: 36vh;
+  font-weight: 700;
+  color: #002654;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0.6vh 1.2vh rgba(0, 0, 0, 0.55),
+    0 0 4vh rgba(255, 255, 255, 0.35);
+  opacity: 0;
+  transform: scale(0.2);
+  z-index: 1;
+}
+
+.goal-splash.go              { animation: goal-show 6s ease-out forwards; }
+.goal-splash.go .goal-splash-bg { animation: goal-bg     6s ease-out forwards; }
+.goal-splash.go .goal-emblem    { animation: goal-emblem 6s ease-out forwards; }
+.goal-splash.go .goal-text      { animation: goal-text   6s cubic-bezier(.2,1.2,.4,1) forwards; }
+
+@keyframes goal-show {
+  0%   { opacity: 0; }
+  6%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes goal-bg {
+  0%   { opacity: 0; }
+  8%   { opacity: 0.95; }
+  85%  { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+@keyframes goal-emblem {
+  0%   { opacity: 0; transform: rotate(-25deg) scale(0.4); }
+  12%  { opacity: 0.55; transform: rotate(0deg) scale(1); }
+  85%  { opacity: 0.55; transform: rotate(0deg) scale(1.02); }
+  100% { opacity: 0;   transform: rotate(15deg) scale(1.25); }
+}
+@keyframes goal-text {
+  0%   { opacity: 0; transform: scale(0.2); }
+  14%  { opacity: 1; transform: scale(1.18); }
+  22%  { transform: scale(1.0); }
+  60%  { transform: scale(1.04); }
+  85%  { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 0; transform: scale(1.3); }
+}
+
 /* Arena banner: centered logo header sitting above the videoboard,
    mimicking the venue signage that crowns the actual scoreboard
    structure. Image (if available) sits behind as a soft backdrop. */

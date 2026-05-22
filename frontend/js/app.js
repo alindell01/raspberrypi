@@ -325,12 +325,36 @@ function pulseIfChanged(el, prevKey, newValue) {
 }
 
 function fireCelebration() {
-  const el = $('celebration');
+  const el     = $('celebration');
+  const splash = $('goal-splash');
+  const horn   = $('goal-horn');
+
+  // Restart the puff-flash and the big GOAL splash from frame 0.
   el.classList.remove('fire');
+  splash.classList.remove('go');
   void el.offsetWidth;
+  void splash.offsetWidth;
   el.classList.add('fire');
+  splash.classList.add('go');
+
+  // Play the goal horn if the user has dropped an MP3 at
+  // /assets/sabres/goal-horn.mp3. Browser autoplay rules may reject
+  // this without user interaction; in --kiosk with the
+  // --autoplay-policy=no-user-gesture-required flag (already set in
+  // deploy/scoreboard-kiosk.service) it plays fine.
+  if (horn && horn.querySelector('source')) {
+    try {
+      horn.currentTime = 0;
+      const p = horn.play();
+      if (p && p.catch) p.catch(() => {});
+    } catch {}
+  }
+
   if (state.celebrateHandle) clearTimeout(state.celebrateHandle);
-  state.celebrateHandle = setTimeout(() => el.classList.remove('fire'), 1800);
+  state.celebrateHandle = setTimeout(() => {
+    el.classList.remove('fire');
+    splash.classList.remove('go');
+  }, 6000);
 }
 
 function renderArena(g) {
@@ -913,6 +937,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.gameId) stopScoreboard();
     } else if (e.key === 'f' || e.key === 'F') {
       toggleFullscreen();
+    } else if (e.key === 'g' || e.key === 'G') {
+      // Test the goal animation + horn without waiting for a real goal.
+      fireCelebration();
     }
   });
   loadGames();

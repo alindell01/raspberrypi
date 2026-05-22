@@ -58,6 +58,7 @@ def _chromium_start_cmd(url: str) -> str:
         f"bash -c 'DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority "
         f"nohup {chrome} --kiosk --noerrdialogs --disable-infobars "
         f"--no-first-run --check-for-update-interval=31536000 "
+        f"--autoplay-policy=no-user-gesture-required "
         f"--user-data-dir={profile} "
         f"--disable-session-crashed-bubble --disable-features=Translate "
         f"{url} >/tmp/scoreboard-chromium.log 2>&1 &'"
