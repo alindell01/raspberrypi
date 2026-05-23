@@ -183,12 +183,10 @@ def _person_name(value: Any) -> str:
 
 def _preview_from_landing(landing: dict) -> dict | None:
     """Pregame info from the matchup section: head coaches, scratches,
-    last-10 records, and head-to-head season series for both teams."""
+    last-10 records, head-to-head season series, and — for playoffs —
+    the series round / game number / series score."""
     matchup = landing.get("matchup") or {}
-    if not matchup:
-        return None
-
-    gi = matchup.get("gameInfo") or {}
+    gi = (matchup.get("gameInfo") or {})
 
     def scratches(side: dict) -> list[dict]:
         out = []
@@ -218,14 +216,23 @@ def _preview_from_landing(landing: dict) -> dict | None:
     away = side("awayTeam", away_gi)
     home = side("homeTeam", home_gi)
 
-    any_data = any(
-        v for s in (away, home) for k, v in s.items()
-        if (v if not isinstance(v, list) else len(v) > 0)
+    # Playoff series info (round, game number, series score).
+    series = _extract_series(landing)
+
+    any_data = (
+        series
+        or any(
+            v for s in (away, home) for k, v in s.items()
+            if (v if not isinstance(v, list) else len(v) > 0)
+        )
     )
     if not any_data:
         return None
 
-    return {"away": away, "home": home}
+    result: dict[str, Any] = {"away": away, "home": home}
+    if series:
+        result["series"] = series
+    return result
 
 
 def _stat_index(items: list[dict]) -> dict[str, dict]:

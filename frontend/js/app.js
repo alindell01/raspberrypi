@@ -547,15 +547,37 @@ function renderPreview(g) {
   const away = (g.away && g.away.abbrev) || 'AWAY';
   const home = (g.home && g.home.abbrev) || 'HOME';
 
+  // Playoff series banner (ROUND 2 · GAME 5 / VGK 3 – 2 COL).
+  const ser = pv.series;
+  const serNode = $('preview-series');
+  if (ser) {
+    $('preview-series-label').textContent = ser.label || '';
+    $('preview-series-score').textContent = ser.series_score || '';
+    serNode.hidden = false;
+  } else {
+    serNode.hidden = true;
+  }
+
   $('preview-away-team').textContent = away;
   $('preview-home-team').textContent = home;
 
-  $('preview-last10-away').textContent = (pv.away && pv.away.last10)        || '';
-  $('preview-last10-home').textContent = (pv.home && pv.home.last10)        || '';
-  $('preview-season-away').textContent = (pv.away && pv.away.season_record) || '';
-  $('preview-season-home').textContent = (pv.home && pv.home.season_record) || '';
-  $('preview-coach-away').textContent  = (pv.away && pv.away.coach)         || '';
-  $('preview-coach-home').textContent  = (pv.home && pv.home.coach)         || '';
+  const l10a = (pv.away && pv.away.last10) || '';
+  const l10h = (pv.home && pv.home.last10) || '';
+  $('preview-last10-away').textContent = l10a;
+  $('preview-last10-home').textContent = l10h;
+  // Hide the LAST 10 row entirely when both are empty (playoffs).
+  const l10Row = l10a || l10h;
+  $('preview-last10-away').parentElement && togglePreviewRow('preview-last10', l10Row);
+
+  const sa = (pv.away && pv.away.season_record) || '';
+  const sh = (pv.home && pv.home.season_record) || '';
+  $('preview-season-away').textContent = sa;
+  $('preview-season-home').textContent = sh;
+  togglePreviewRow('preview-season', sa || sh);
+
+  $('preview-coach-away').textContent  = (pv.away && pv.away.coach) || '';
+  $('preview-coach-home').textContent  = (pv.home && pv.home.coach) || '';
+  togglePreviewRow('preview-coach', (pv.away && pv.away.coach) || (pv.home && pv.home.coach));
 
   const awayScr = (pv.away && pv.away.scratches) || [];
   const homeScr = (pv.home && pv.home.scratches) || [];
@@ -568,6 +590,16 @@ function renderPreview(g) {
   $('scratches').hidden = awayScr.length === 0 && homeScr.length === 0;
 
   node.hidden = false;
+}
+
+function togglePreviewRow(prefix, show) {
+  const away  = $(prefix + '-away');
+  const label = $(prefix + '-label');
+  const home  = $(prefix + '-home');
+  const vis = show ? '' : 'none';
+  if (away)  away.style.display  = vis;
+  if (label) label.style.display = vis;
+  if (home)  home.style.display  = vis;
 }
 
 function renderScratchList(list) {
