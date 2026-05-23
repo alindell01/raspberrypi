@@ -415,6 +415,7 @@ button#go:disabled { opacity: 0.4; cursor: not-allowed; }
     1fr
     minmax(11vw, 13vw);
   align-items: center;
+  align-content: center;
   padding: 2vh 2vw;
   gap: 1.5vw;
 }
