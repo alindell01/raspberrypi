@@ -38,19 +38,39 @@ where qBittorrent picks it up. No cloud, no relay needed for `.torrent` files.
 
 Runs as a tiny FastAPI app on the same machine/network as qBittorrent.
 
-### Run it
+### Windows 11 — step by step (recommended)
+1. **Install Python** (if you don't have it): `winget install Python.Python.3.12`
+   (or from python.org — tick *Add python.exe to PATH*). Verify in a new
+   terminal: `python --version`.
+2. **Install the dependencies.** Open PowerShell in the repo folder and run:
+   ```powershell
+   python -m pip install -r requirements.txt
+   ```
+3. **Open the firewall** so your phone can reach the relay. Right-click
+   `torrentrelay\windows\allow-firewall.ps1` → **Run with PowerShell** (accept the
+   admin prompt). It adds the rule and prints your PC's IP address.
+4. **Set your password and start it.** Open `torrentrelay\windows\start-relay.bat`
+   in Notepad, change `QB_PASSWORD=CHANGE_ME` to your qBittorrent Web UI password,
+   save, then **double-click the .bat**. A window opens and stays open while the
+   relay runs.
+5. **Verify:** in a browser on the PC, open `http://localhost:8800/healthz` — it
+   should show the qBittorrent version.
+6. **From your phone** (same Wi-Fi), open `http://<your-pc-ip>:8800` (the IP the
+   firewall script printed, e.g. `http://192.168.1.50:8800`), then install it
+   (see below).
+
+#### Start the relay automatically at login (Windows)
+Press <kbd>Win</kbd>+<kbd>R</kbd>, type `shell:startup`, Enter. Right-click
+`start-relay.bat` → **Copy**, then paste a **shortcut** to it into that Startup
+folder. It'll launch when you log in. (To hide the console window, set the
+shortcut's *Run* to *Minimized*.)
+
+### Run it (Linux / macOS)
 From the repo root (after `pip install -r requirements.txt`, or the project venv):
 
 ```bash
-# Linux / macOS
 QB_URL=http://localhost:8080 QB_USERNAME=admin QB_PASSWORD=yourpass \
   python -m uvicorn torrentrelay.main:app --host 0.0.0.0 --port 8800
-```
-
-```powershell
-# Windows PowerShell
-$env:QB_URL="http://localhost:8080"; $env:QB_USERNAME="admin"; $env:QB_PASSWORD="yourpass"
-python -m uvicorn torrentrelay.main:app --host 0.0.0.0 --port 8800
 ```
 
 Check it's wired up: open `http://<pc-ip>:8800/healthz` — it should report the
