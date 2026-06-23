@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Send to qBittorrent</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#0d9488">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0f172a; color: #e2e8f0;
+      display: flex; flex-direction: column; align-items: center;
+      padding: max(24px, env(safe-area-inset-top)) 20px 40px;
+    }
+    h1 { font-size: 1.35rem; margin: 8px 0 2px; }
+    .sub { color: #94a3b8; font-size: .9rem; margin: 0 0 22px; }
+    .card { width: 100%; max-width: 480px; }
+    textarea {
+      width: 100%; min-height: 110px; resize: vertical;
+      background: #1e293b; color: #e2e8f0; border: 1px solid #334155;
+      border-radius: 12px; padding: 14px; font-size: 1rem; font-family: inherit;
+    }
+    textarea:focus { outline: 2px solid #0d9488; border-color: #0d9488; }
+    .row { display: flex; gap: 10px; margin-top: 14px; }
+    button, .filebtn {
+      flex: 1; border: none; border-radius: 12px; padding: 15px 12px;
+      font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center;
+    }
+    button.primary { background: #0d9488; color: #fff; }
+    button.primary:active { background: #0f766e; }
+    .filebtn { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+    input[type=file] { display: none; }
+    #fileName { color: #5eead4; font-size: .85rem; margin-top: 8px; min-height: 1em; }
+    #status {
+      margin-top: 18px; padding: 14px; border-radius: 12px; font-size: .95rem;
+      display: none; white-space: pre-wrap; word-break: break-word;
+    }
+    #status.ok  { display: block; background: #064e3b; color: #6ee7b7; }
+    #status.err { display: block; background: #4c0519; color: #fda4af; }
+    details { margin-top: 28px; max-width: 480px; width: 100%; color: #94a3b8; font-size: .85rem; }
+    summary { cursor: pointer; color: #5eead4; }
+    code { background: #1e293b; padding: 1px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>⬇️ Send to qBittorrent</h1>
+  <p class="sub">Paste a magnet link or pick a .torrent file</p>
+
+  <div class="card">
+    <form id="form">
+      <textarea id="text" name="text" placeholder="magnet:?xt=urn:btih:…  (or paste a page link / .torrent URL)" autocomplete="off"></textarea>
+      <div class="row">
+        <label class="filebtn">
+          Choose .torrent
+          <input type="file" id="file" name="torrent" accept=".torrent,application/x-bittorrent">
+        </label>
+        <button type="submit" class="primary">Send</button>
+      </div>
+      <div id="fileName"></div>
+    </form>
+    <div id="status"></div>
+  </div>
+
+  <details>
+    <summary>How do I send from the share menu?</summary>
+    <p>Open this page in Chrome on your phone, then <b>menu → Add to Home screen / Install</b>.
+    After that, “Send to qBittorrent” shows up in the <b>Share</b> sheet — tap Share on any
+    magnet link and choose it.</p>
+    <p>On iPhone, Safari doesn’t support share targets, so use the paste box above
+    (or add a Shortcut that POSTs to <code>/api/add</code>).</p>
+  </details>
+
+  <script>
+    const form = document.getElementById('form');
+    const fileInput = document.getElementById('file');
+    const fileName = document.getElementById('fileName');
+    const statusEl = document.getElementById('status');
+
+    fileInput.addEventListener('change', () => {
+      fileName.textContent = fileInput.files.length ? '📎 ' + fileInput.files[0].name : '';
+    });
+
+    function show(ok, msg) {
+      statusEl.className = ok ? 'ok' : 'err';
+      statusEl.textContent = (ok ? '✅ ' : '⚠️ ') + msg;
+    }
+
+    // Show a result when the share target redirects back here.
+    const params = new URLSearchParams(location.search);
+    if (params.get('status') === 'ok') {
+      const n = params.get('count') || '1';
+      show(true, `Added ${n} torrent${n === '1' ? '' : 's'} to qBittorrent.`);
+      history.replaceState({}, '', '/');
+    } else if (params.get('status') === 'error') {
+      show(false, params.get('msg') || 'Something went wrong.');
+      history.replaceState({}, '', '/');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = new FormData();
+      const text = document.getElementById('text').value.trim();
+      if (text) data.append('text', text);
+      if (fileInput.files.length) data.append('torrent', fileInput.files[0]);
+      if (!text && !fileInput.files.length) { show(false, 'Paste a magnet or pick a .torrent first.'); return; }
+      show(true, 'Sending…');
+      try {
+        const r = await fetch('/api/add', { method: 'POST', body: data });
+        const body = await r.json().catch(() => ({}));
+        if (r.ok) {
+          const n = (body.added_links?.length || 0) + (body.added_files?.length || 0);
+          show(true, `Added ${n} torrent${n === 1 ? '' : 's'} to qBittorrent.`);
+          form.reset(); fileName.textContent = '';
+        } else {
+          show(false, body.detail || `Failed (HTTP ${r.status}).`);
+        }
+      } catch (err) {
+        show(false, 'Could not reach the relay: ' + err.message);
+      }
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

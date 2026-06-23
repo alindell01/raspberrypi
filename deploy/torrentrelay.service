@@ -1,0 +1,22 @@
+[Unit]
+Description=Torrent Relay (phone -> qBittorrent)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__USER__
+WorkingDirectory=__REPO__
+# Point these at your qBittorrent Web UI + credentials.
+Environment=QB_URL=http://localhost:8080
+Environment=QB_USERNAME=admin
+Environment=QB_PASSWORD=adminadmin
+# Optional: force a save path / category for everything sent from the phone.
+# Environment=QB_SAVEPATH=/mnt/downloads
+# Environment=QB_CATEGORY=phone
+ExecStart=__REPO__/.venv/bin/uvicorn torrentrelay.main:app --host 0.0.0.0 --port 8800
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
