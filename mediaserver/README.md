@@ -1,0 +1,167 @@
+# Media Automation for your Plex server (Windows)
+
+Search for a movie/show **from your phone**, have it download automatically, get
+renamed and dropped on your 4TB drive, and show up in **Plex** — which you
+already have running. This adds *only* the automation layer; Plex stays as-is.
+
+```
+Phone (Overseerr) → Prowlarr → Radarr / Sonarr → qBittorrent → 4TB drive → Plex sees it
+   search/request     indexers    grab + rename      download      /data/media     (no change)
+```
+
+Nothing here uses your friend's API keys — every app makes its own on first run.
+
+---
+
+## What you get
+
+| App | URL (on this PC) | Job |
+|---|---|---|
+| **Overseerr** | http://localhost:5055 | The phone app. Log in with Plex, search, click request. |
+| **Radarr** | http://localhost:7878 | Movies: grabs, renames, files them. |
+| **Sonarr** | http://localhost:8989 | TV: same, per episode. |
+| **Prowlarr** | http://localhost:9696 | Manages all your torrent indexers in one place. |
+| **qBittorrent** | http://localhost:8080 | The actual downloader. |
+
+---
+
+## Drive layout (important — this is the whole trick)
+
+Everything the automation touches lives on the **4TB drive**, under one folder.
+That keeps downloads and finished media on the *same* volume, so Radarr/Sonarr
+import files **instantly** (a hardlink, not a slow copy) and you can keep seeding
+without storing the file twice.
+
+Create this on the 4TB drive (assuming it's `F:` — adjust to match):
+
+```
+F:\MediaStack\
+├── downloads\        ← qBittorrent saves here
+└── media\
+    ├── movies\       ← Radarr's library  → add to Plex
+    └── tv\           ← Sonarr's library  → add to Plex
+```
+
+Inside the containers this whole folder appears as `/data`, so:
+
+| You see (Windows) | Apps see (container) |
+|---|---|
+| `F:\MediaStack\downloads` | `/data/downloads` |
+| `F:\MediaStack\media\movies` | `/data/media/movies` |
+| `F:\MediaStack\media\tv` | `/data/media/tv` |
+
+> Your two **existing** Plex drives are left completely alone. New downloads pile
+> up on the 4TB. When you want new stuff to also land on the old drives, see
+> **"Adding your other drives"** at the bottom.
+
+---
+
+## Setup — one time
+
+### 1. Install Docker Desktop
+Get it from https://www.docker.com/products/docker-desktop/ and install with the
+**WSL 2** backend (the default). Reboot if it asks. Launch it once so it's running.
+
+### 2. Make the folders
+Create the `F:\MediaStack\downloads`, `media\movies`, and `media\tv` folders above.
+
+### 3. Configure this stack
+In this `mediaserver` folder:
+
+1. Copy `.env.example` to `.env`.
+2. Open `.env` and set **`DATA_DIR`** to your 4TB path, e.g. `F:/MediaStack`
+   (forward slashes). Set your `TZ` if not Eastern.
+
+### 4. Start everything
+Open **PowerShell** in this folder and run:
+
+```powershell
+docker compose up -d
+```
+
+First run pulls the images (a few minutes). After that the apps auto-start every
+time Windows boots — no Scheduled Tasks needed. Useful commands later:
+
+```powershell
+docker compose ps          # what's running
+docker compose logs -f     # watch logs
+docker compose pull; docker compose up -d   # update all apps
+docker compose down        # stop everything
+```
+
+---
+
+## Configure the apps — do them in this order
+
+Each app's first screen will ask you to create a login. Then:
+
+### A. qBittorrent (http://localhost:8080)
+- Default login is `admin` / a temporary password shown in the logs:
+  `docker compose logs qbittorrent` (look for "temporary password"). Change it
+  under **Settings → Web UI**.
+- **Settings → Downloads → Default Save Path:** set to `/data/downloads`.
+
+### B. Prowlarr (http://localhost:9696)
+- Add your torrent indexers under **Indexers → Add Indexer**.
+- Connect it to the others: **Settings → Apps → Add → Radarr** and **Sonarr**.
+  Use these addresses (containers talk to each other by name):
+  - Radarr: `http://radarr:7878`
+  - Sonarr: `http://sonarr:8989`
+  - Grab each app's API key from its **Settings → General** page.
+  Prowlarr then pushes all indexers into Radarr/Sonarr automatically.
+
+### C. Radarr (http://localhost:7878)
+- **Settings → Media Management → Root Folders → Add:** `/data/media/movies`
+- **Settings → Download Clients → Add → qBittorrent:** host `qbittorrent`, port `8080`, your qbit login.
+- Turn on **Settings → Media Management → "Use Hardlinks instead of Copy"** (default on).
+
+### D. Sonarr (http://localhost:8989)
+- Same as Radarr but root folder `/data/media/tv` and the download client points to the same qBittorrent.
+
+### E. Overseerr (http://localhost:5055) — the phone app
+- Sign in with **Plex** → it imports your Plex account and libraries.
+- Add Radarr and Sonarr under **Settings → Services** (host `radarr` / `sonarr`,
+  their ports, their API keys). Now a phone request flows straight through.
+
+### F. Point Plex at the new media
+In Plex: add `F:\MediaStack\media\movies` to your **Movies** library and
+`F:\MediaStack\media\tv` to your **TV** library (or make new libraries). When
+Radarr/Sonarr finish an import, Plex picks it up — turn on Plex's "Scan my
+library automatically," or have Radarr/Sonarr notify Plex under their
+**Settings → Connect → Plex Media Server**.
+
+---
+
+## Using it from your phone
+
+Open `http://<this-pc-ip>:5055` in your phone's browser (same as your friend's
+`10.0.0.157` trick — use this PC's IP). Log in with Plex, search, tap request.
+Done. To reach it you may need a firewall rule, same idea as their note:
+
+```powershell
+New-NetFirewallRule -DisplayName "Overseerr 5055" -Direction Inbound -Protocol TCP -LocalPort 5055 -Action Allow -Profile Private
+```
+
+---
+
+## A word on VPNs (torrents)
+
+Many people route the torrent client through a VPN so their ISP doesn't see the
+traffic. This stack runs qBittorrent plainly to keep first-setup simple. If you
+want a VPN, the usual approach is a `gluetun` container that qBittorrent routes
+through — tell me your VPN provider and I'll wire it in.
+
+---
+
+## Adding your other drives later
+
+When the 4TB fills up, or you want new movies on the old drives too:
+
+1. In `docker-compose.yml`, add another mount to **radarr** (and/or sonarr), e.g.
+   `- D:/Movies:/data2/movies`, then `docker compose up -d`.
+2. In Radarr, add `/data2/movies` as a second **Root Folder**.
+3. When you add a movie you pick which root folder it goes to. (Note: imports to a
+   *different* drive than the download are a copy, not an instant hardlink — that's
+   unavoidable across physical drives.)
+
+That's it. If you hit a snag on any step, tell me which app and what you see.

@@ -1,0 +1,89 @@
+# ─────────────────────────────────────────────────────────────
+#  Media automation stack for an EXISTING Plex server (Windows + Docker Desktop)
+#
+#  Phone (Overseerr) → Prowlarr → Radarr/Sonarr → qBittorrent → 4TB drive → Plex
+#
+#  Plex itself is NOT in here — it stays running natively on Windows as you have it.
+#  Every app below generates its OWN fresh API keys on first launch.
+#
+#  All apps share one mount: ${DATA_DIR} → /data
+#  so downloads (/data/downloads) and media (/data/media) sit on ONE volume.
+#  That makes imports instant (hardlinks) and avoids double-storing while seeding.
+# ─────────────────────────────────────────────────────────────
+
+services:
+  # ── Indexer manager: one place to add all your torrent indexers ──
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./config/prowlarr:/config
+    ports:
+      - 9696:9696
+
+  # ── Movies: grabs, renames, places into /data/media/movies ──
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./config/radarr:/config
+      - ${DATA_DIR}:/data
+    ports:
+      - 7878:7878
+
+  # ── TV: grabs, renames, places into /data/media/tv ──
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./config/sonarr:/config
+      - ${DATA_DIR}:/data
+    ports:
+      - 8989:8989
+
+  # ── Download client ──
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - WEBUI_PORT=8080
+    volumes:
+      - ./config/qbittorrent:/config
+      - ${DATA_DIR}:/data
+    ports:
+      - 8080:8080      # web UI
+      - 6881:6881      # torrent traffic
+      - 6881:6881/udp
+
+  # ── The phone app: search & request, logs in with your Plex account ──
+  overseerr:
+    image: lscr.io/linuxserver/overseerr:latest
+    container_name: overseerr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./config/overseerr:/config
+    ports:
+      - 5055:5055
