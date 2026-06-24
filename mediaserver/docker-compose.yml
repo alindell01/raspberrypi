@@ -56,11 +56,41 @@ services:
     ports:
       - 8989:8989
 
-  # ── Download client ──
+  # ── PIA VPN tunnel. qBittorrent routes ALL its traffic through this. ──
+  #    If the tunnel drops, qBittorrent loses network too (kill-switch) —
+  #    so torrent traffic never leaks to your real IP.
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=private internet access
+      - OPENVPN_USER=${PIA_USER}
+      - OPENVPN_PASSWORD=${PIA_PASS}
+      - SERVER_REGIONS=${PIA_REGION}
+      - VPN_PORT_FORWARDING=on          # better seeding / ratio on private trackers
+      - PORT_FORWARD_ONLY=on
+      - TZ=${TZ}
+    volumes:
+      - ./config/gluetun:/gluetun
+    ports:
+      # qBittorrent's ports are published HERE because it shares gluetun's network.
+      - 8080:8080      # qBittorrent web UI
+      - 6881:6881      # torrent traffic
+      - 6881:6881/udp
+
+  # ── Download client — shares gluetun's network (no ports of its own). ──
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
     restart: unless-stopped
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -69,10 +99,6 @@ services:
     volumes:
       - ./config/qbittorrent:/config
       - ${DATA_DIR}:/data
-    ports:
-      - 8080:8080      # web UI
-      - 6881:6881      # torrent traffic
-      - 6881:6881/udp
 
   # ── The phone app: search & request, logs in with your Plex account ──
   overseerr:

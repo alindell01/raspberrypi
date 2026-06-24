@@ -21,7 +21,7 @@ Nothing here uses your friend's API keys — every app makes its own on first ru
 | **Radarr** | http://localhost:7878 | Movies: grabs, renames, files them. |
 | **Sonarr** | http://localhost:8989 | TV: same, per episode. |
 | **Prowlarr** | http://localhost:9696 | Manages all your torrent indexers in one place. |
-| **qBittorrent** | http://localhost:8080 | The actual downloader. |
+| **qBittorrent** | http://localhost:8080 | The actual downloader (runs through your PIA VPN). |
 
 ---
 
@@ -69,8 +69,11 @@ Create the `F:\MediaStack\downloads`, `media\movies`, and `media\tv` folders abo
 In this `mediaserver` folder:
 
 1. Copy `.env.example` to `.env`.
-2. Open `.env` and set **`DATA_DIR`** to your 4TB path, e.g. `F:/MediaStack`
-   (forward slashes). Set your `TZ` if not Eastern.
+2. Open `.env` and set:
+   - **`DATA_DIR`** to your 4TB path, e.g. `F:/MediaStack` (forward slashes).
+   - **`PIA_USER` / `PIA_PASS`** to your Private Internet Access login.
+   - **`PIA_REGION`** to a **port-forwarding** region (most US regions don't
+     support it — `CA Toronto` is a safe default). Set `TZ` if not Eastern.
 
 ### 4. Start everything
 Open **PowerShell** in this folder and run:
@@ -100,6 +103,14 @@ Each app's first screen will ask you to create a login. Then:
   `docker compose logs qbittorrent` (look for "temporary password"). Change it
   under **Settings → Web UI**.
 - **Settings → Downloads → Default Save Path:** set to `/data/downloads`.
+- **Confirm the VPN is actually carrying the traffic** (do this once):
+  - `docker compose logs gluetun` should show a successful connection and a line
+    like `port forwarding is enabled, port = 49xxx`.
+  - In qBittorrent, **Settings → Connection → Listening Port**: set it to that
+    forwarded port number. (PIA's forwarded port can change if the container
+    restarts; if seeding ever looks slow, re-check the gluetun log and update it.)
+  - Sanity check that qBittorrent sees the VPN's IP, not yours: the gluetun log
+    prints the public IP it connected with — that's the IP your torrents use.
 
 ### B. Prowlarr (http://localhost:9696)
 - Add your torrent indexers under **Indexers → Add Indexer**.
@@ -112,11 +123,14 @@ Each app's first screen will ask you to create a login. Then:
 
 ### C. Radarr (http://localhost:7878)
 - **Settings → Media Management → Root Folders → Add:** `/data/media/movies`
-- **Settings → Download Clients → Add → qBittorrent:** host `qbittorrent`, port `8080`, your qbit login.
+- **Settings → Download Clients → Add → qBittorrent:** host **`gluetun`**, port `8080`, your qbit login.
+  > Use `gluetun`, not `qbittorrent` — qBittorrent shares the VPN container's
+  > network, so that's the name other apps reach it by.
 - Turn on **Settings → Media Management → "Use Hardlinks instead of Copy"** (default on).
 
 ### D. Sonarr (http://localhost:8989)
-- Same as Radarr but root folder `/data/media/tv` and the download client points to the same qBittorrent.
+- Same as Radarr but root folder `/data/media/tv`, and the download client host is
+  also **`gluetun`**, port `8080`.
 
 ### E. Overseerr (http://localhost:5055) — the phone app
 - Sign in with **Plex** → it imports your Plex account and libraries.
@@ -144,12 +158,33 @@ New-NetFirewallRule -DisplayName "Overseerr 5055" -Direction Inbound -Protocol T
 
 ---
 
-## A word on VPNs (torrents)
+## Adding IPTorrents (your private tracker)
 
-Many people route the torrent client through a VPN so their ISP doesn't see the
-traffic. This stack runs qBittorrent plainly to keep first-setup simple. If you
-want a VPN, the usual approach is a `gluetun` container that qBittorrent routes
-through — tell me your VPN provider and I'll wire it in.
+In **Prowlarr → Indexers → Add Indexer**, search **"IPTorrents"** and pick it.
+Private trackers don't have a normal API, so Prowlarr logs in with your **browser
+session cookie**:
+
+1. Log into `iptorrents.com` in your browser (tick "remember me").
+2. **F12 → Application → Cookies → iptorrents.com**, copy the `uid` and `pass` values.
+3. In the Prowlarr IPTorrents indexer, paste them into the **Cookie** field as one line:
+   ```
+   uid=YOUR_UID; pass=YOUR_PASS
+   ```
+4. **Test** → green → **Save**. It then syncs into Radarr/Sonarr automatically.
+
+Notes for any private tracker:
+- The cookie **expires** eventually. When searches suddenly stop, re-grab the
+  cookies and update them — that's the only regular maintenance.
+- **Ratio matters.** In qBittorrent don't auto-delete finished torrents — let them
+  seed. Your PIA port forward (set above) helps your ratio, and the hardlink setup
+  means seeding costs no extra disk space.
+
+## VPN — already built in
+
+qBittorrent routes all its traffic through PIA via the `gluetun` container, with a
+kill-switch (if the tunnel drops, downloads stop instead of leaking your IP). Set
+`PIA_USER` / `PIA_PASS` / `PIA_REGION` in `.env`. Only qBittorrent uses the VPN;
+the other apps (and Plex) run normally.
 
 ---
 
