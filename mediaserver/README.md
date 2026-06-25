@@ -32,10 +32,10 @@ That keeps downloads and finished media on the *same* volume, so Radarr/Sonarr
 import files **instantly** (a hardlink, not a slow copy) and you can keep seeding
 without storing the file twice.
 
-Create this on the 4TB drive (assuming it's `F:` — adjust to match):
+Create this on the 4TB drive (assuming it's `H:` — adjust to match):
 
 ```
-F:\MediaStack\
+H:\MediaStack\
 ├── downloads\        ← qBittorrent saves here
 └── media\
     ├── movies\       ← Radarr's library  → add to Plex
@@ -46,9 +46,9 @@ Inside the containers this whole folder appears as `/data`, so:
 
 | You see (Windows) | Apps see (container) |
 |---|---|
-| `F:\MediaStack\downloads` | `/data/downloads` |
-| `F:\MediaStack\media\movies` | `/data/media/movies` |
-| `F:\MediaStack\media\tv` | `/data/media/tv` |
+| `H:\MediaStack\downloads` | `/data/downloads` |
+| `H:\MediaStack\media\movies` | `/data/media/movies` |
+| `H:\MediaStack\media\tv` | `/data/media/tv` |
 
 > Your two **existing** Plex drives are left completely alone. New downloads pile
 > up on the 4TB. When you want new stuff to also land on the old drives, see
@@ -63,14 +63,14 @@ Get it from https://www.docker.com/products/docker-desktop/ and install with the
 **WSL 2** backend (the default). Reboot if it asks. Launch it once so it's running.
 
 ### 2. Make the folders
-Create the `F:\MediaStack\downloads`, `media\movies`, and `media\tv` folders above.
+Create the `H:\MediaStack\downloads`, `media\movies`, and `media\tv` folders above.
 
 ### 3. Configure this stack
 In this `mediaserver` folder:
 
 1. Copy `.env.example` to `.env`.
 2. Open `.env` and set:
-   - **`DATA_DIR`** to your 4TB path, e.g. `F:/MediaStack` (forward slashes).
+   - **`DATA_DIR`** to your 4TB path, e.g. `H:/MediaStack` (forward slashes).
    - **`PIA_USER` / `PIA_PASS`** to your Private Internet Access login.
    - **`PIA_REGION`** to a **port-forwarding** region (most US regions don't
      support it — `CA Toronto` is a safe default). Set `TZ` if not Eastern.
@@ -138,8 +138,8 @@ Each app's first screen will ask you to create a login. Then:
   their ports, their API keys). Now a phone request flows straight through.
 
 ### F. Point Plex at the new media
-In Plex: add `F:\MediaStack\media\movies` to your **Movies** library and
-`F:\MediaStack\media\tv` to your **TV** library (or make new libraries). When
+In Plex: add `H:\MediaStack\media\movies` to your **Movies** library and
+`H:\MediaStack\media\tv` to your **TV** library (or make new libraries). When
 Radarr/Sonarr finish an import, Plex picks it up — turn on Plex's "Scan my
 library automatically," or have Radarr/Sonarr notify Plex under their
 **Settings → Connect → Plex Media Server**.
