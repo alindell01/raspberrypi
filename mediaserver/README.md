@@ -5,7 +5,7 @@ renamed and dropped on your 4TB drive, and show up in **Plex** — which you
 already have running. This adds *only* the automation layer; Plex stays as-is.
 
 ```
-Phone (Overseerr) → Prowlarr → Radarr / Sonarr → qBittorrent → 4TB drive → Plex sees it
+Phone (Seerr) → Prowlarr → Radarr / Sonarr → qBittorrent → 4TB drive → Plex sees it
    search/request     indexers    grab + rename      download      /data/media     (no change)
 ```
 
@@ -17,7 +17,7 @@ Nothing here uses your friend's API keys — every app makes its own on first ru
 
 | App | URL (on this PC) | Job |
 |---|---|---|
-| **Overseerr** | http://localhost:5055 | The phone app. Log in with Plex, search, click request. |
+| **Seerr** | http://localhost:5055 | The phone app. Log in with Plex, search, click request. |
 | **Radarr** | http://localhost:7878 | Movies: grabs, renames, files them. |
 | **Sonarr** | http://localhost:8989 | TV: same, per episode. |
 | **Prowlarr** | http://localhost:9696 | Manages all your torrent indexers in one place. |
@@ -143,7 +143,7 @@ Each app's first screen will ask you to create a login. Then:
 - Same as Radarr but root folder `/data/media/tv`, and the download client host is
   also **`gluetun`**, port `8080`.
 
-### E. Overseerr (http://localhost:5055) — the phone app
+### E. Seerr (http://localhost:5055) — the phone app
 - Sign in with **Plex** → it imports your Plex account and libraries.
 - Add Radarr and Sonarr under **Settings → Services** (host `radarr` / `sonarr`,
   their ports, their API keys). Now a phone request flows straight through.
@@ -164,7 +164,7 @@ Open `http://<this-pc-ip>:5055` in your phone's browser (same as your friend's
 Done. To reach it you may need a firewall rule, same idea as their note:
 
 ```powershell
-New-NetFirewallRule -DisplayName "Overseerr 5055" -Direction Inbound -Protocol TCP -LocalPort 5055 -Action Allow -Profile Private
+New-NetFirewallRule -DisplayName "Seerr 5055" -Direction Inbound -Protocol TCP -LocalPort 5055 -Action Allow -Profile Private
 ```
 
 ---

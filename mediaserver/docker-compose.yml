@@ -100,16 +100,19 @@ services:
       - ./config/qbittorrent:/config
       - ${DATA_DIR}:/data
 
-  # ── The phone app: search & request, logs in with your Plex account ──
-  overseerr:
-    image: lscr.io/linuxserver/overseerr:latest
-    container_name: overseerr
+  # ── The phone app: search & request, logs in with your Plex account.
+  #    Seerr is the maintained successor to Overseerr. It reuses the same config
+  #    folder and auto-migrates the existing Overseerr data on first start.
+  #    (Runs as UID 1000, needs init:true, config lives at /app/config.) ──
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    init: true
     restart: unless-stopped
     environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
       - TZ=${TZ}
+      - PORT=5055
     volumes:
-      - ./config/overseerr:/config
+      - ./config/overseerr:/app/config
     ports:
       - 5055:5055
