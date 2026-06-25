@@ -116,3 +116,6 @@ services:
       - ./config/overseerr:/app/config
     ports:
       - 5055:5055
+    # Lets Seerr reach Plex running natively on the Windows host.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
