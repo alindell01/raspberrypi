@@ -79,7 +79,7 @@ services:
       - ./config/gluetun:/gluetun
     ports:
       # qBittorrent's ports are published HERE because it shares gluetun's network.
-      - 8080:8080      # qBittorrent web UI
+      - 8081:8080      # qBittorrent web UI  (host 8081 → container 8080; 8080 was taken)
       - 6881:6881      # torrent traffic
       - 6881:6881/udp
 

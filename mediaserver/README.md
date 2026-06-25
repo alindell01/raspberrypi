@@ -21,7 +21,7 @@ Nothing here uses your friend's API keys — every app makes its own on first ru
 | **Radarr** | http://localhost:7878 | Movies: grabs, renames, files them. |
 | **Sonarr** | http://localhost:8989 | TV: same, per episode. |
 | **Prowlarr** | http://localhost:9696 | Manages all your torrent indexers in one place. |
-| **qBittorrent** | http://localhost:8080 | The actual downloader (runs through your PIA VPN). |
+| **qBittorrent** | http://localhost:8081 | The actual downloader (runs through your PIA VPN). |
 
 ---
 
@@ -98,7 +98,7 @@ docker compose down        # stop everything
 
 Each app's first screen will ask you to create a login. Then:
 
-### A. qBittorrent (http://localhost:8080)
+### A. qBittorrent (http://localhost:8081)
 - Default login is `admin` / a temporary password shown in the logs:
   `docker compose logs qbittorrent` (look for "temporary password"). Change it
   under **Settings → Web UI**.
