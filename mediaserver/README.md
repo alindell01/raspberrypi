@@ -99,6 +99,17 @@ docker compose down        # stop everything
 Each app's first screen will ask you to create a login. Then:
 
 ### A. qBittorrent (http://localhost:18080)
+- **If the page just says "Unauthorized"** (qBittorrent rejecting the remapped
+  port via host-header validation), turn that check off once:
+  ```powershell
+  docker compose stop qbittorrent
+  notepad config\qbittorrent\qBittorrent\qBittorrent.conf
+  ```
+  Under the `[Preferences]` section add `WebUI\HostHeaderValidation=false`, save, then:
+  ```powershell
+  docker compose start qbittorrent
+  ```
+  Reload the page and you'll get the login screen. (Safe — it's LAN-only, behind the VPN.)
 - Default login is `admin` / a temporary password shown in the logs:
   `docker compose logs qbittorrent` (look for "temporary password"). Change it
   under **Settings → Web UI**.
