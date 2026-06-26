@@ -20,6 +20,7 @@ Nothing here uses your friend's API keys — every app makes its own on first ru
 | **Seerr** | http://localhost:5055 | The phone app. Log in with Plex, search, click request. |
 | **Radarr** | http://localhost:7878 | Movies: grabs, renames, files them. |
 | **Sonarr** | http://localhost:8989 | TV: same, per episode. |
+| **Lidarr** | http://localhost:8686 | Music: grabs, tags, files albums. (Optional.) |
 | **Prowlarr** | http://localhost:9696 | Manages all your torrent indexers in one place. |
 | **qBittorrent** | http://localhost:18080 | The actual downloader (runs through your PIA VPN). |
 
@@ -142,6 +143,16 @@ Each app's first screen will ask you to create a login. Then:
 ### D. Sonarr (http://localhost:8989)
 - Same as Radarr but root folder `/data/media/tv`, and the download client host is
   also **`gluetun`**, port `8080`.
+
+### D2. Lidarr — music (optional, http://localhost:8686)
+Same pattern as Radarr/Sonarr, plus a music folder:
+- First make the folder on the drive: `H:\MediaStack\media\music`.
+- **Settings → Media Management → Root Folders → Add:** `/data/media/music`
+- **Settings → Download Clients → Add → qBittorrent:** host **`gluetun`**, port `8080`.
+- In **Prowlarr → Settings → Apps → Add → Lidarr** (`http://lidarr:8686`, API key from
+  Lidarr → Settings → General) so IPTorrents syncs in.
+- Add artists/albums in Lidarr's own UI (Seerr can't request music). Then add
+  `H:\MediaStack\media\music` to Plex as a **Music** library; play with Plex or Plexamp.
 
 ### E. Seerr (http://localhost:5055) — the phone app
 - Sign in with **Plex** → it imports your Plex account and libraries.

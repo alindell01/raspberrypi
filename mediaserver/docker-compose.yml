@@ -56,6 +56,21 @@ services:
     ports:
       - 8989:8989
 
+  # ── Music: grabs, tags, places into /data/media/music ──
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./config/lidarr:/config
+      - ${DATA_DIR}:/data
+    ports:
+      - 8686:8686
+
   # ── PIA VPN tunnel. qBittorrent routes ALL its traffic through this. ──
   #    If the tunnel drops, qBittorrent loses network too (kill-switch) —
   #    so torrent traffic never leaks to your real IP.
