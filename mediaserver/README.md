@@ -21,6 +21,8 @@ Nothing here uses your friend's API keys — every app makes its own on first ru
 | **Radarr** | http://localhost:7878 | Movies: grabs, renames, files them. |
 | **Sonarr** | http://localhost:8989 | TV: same, per episode. |
 | **Lidarr** | http://localhost:8686 | Music: grabs, tags, files albums. (Optional.) |
+| **LazyLibrarian** | http://localhost:5299 | Books/audiobooks auto-grabber (Readarr replacement). (Optional.) |
+| **Audiobookshelf** | http://localhost:13378 | Audiobook + ebook player, great phone apps. (Optional.) |
 | **Prowlarr** | http://localhost:9696 | Manages all your torrent indexers in one place. |
 | **qBittorrent** | http://localhost:18080 | The actual downloader (runs through your PIA VPN). |
 
@@ -153,6 +155,29 @@ Same pattern as Radarr/Sonarr, plus a music folder:
   Lidarr → Settings → General) so IPTorrents syncs in.
 - Add artists/albums in Lidarr's own UI (Seerr can't request music). Then add
   `H:\MediaStack\media\music` to Plex as a **Music** library; play with Plex or Plexamp.
+
+### D3. Books & audiobooks (optional)
+
+Readarr is retired, so books split into two tools:
+
+**Audiobookshelf (the player) — http://localhost:13378**
+- Make folders first: `H:\MediaStack\media\audiobooks` and `H:\MediaStack\media\books`.
+- On first launch create an admin account, then **Add Library** →
+  point an **Audiobooks** library at `/data/media/audiobooks` and (optionally) a
+  **Books** library at `/data/media/books`.
+- Install the **Audiobookshelf** app on your phone, point it at
+  `http://<this-pc-ip>:13378` (open that port in the firewall like Seerr's).
+
+**LazyLibrarian (the auto-grabber) — http://localhost:5299**
+- **Config → Downloaders:** add qBittorrent — host **`gluetun`**, port `8080`,
+  your qbit login; set its download dir under `/data/downloads`.
+- **Config → Processing:** set the destination to `/data/media/books` (and/or audiobooks).
+- **Config → Searching:** add a **Torznab** provider pointing at Prowlarr. In Prowlarr,
+  **Settings → Indexers**, open IPTorrents and copy its **Torznab feed URL + API key**,
+  paste into LazyLibrarian. (LazyLibrarian doesn't use the Prowlarr "Apps" sync the
+  way the \*arrs do — you give it the feed directly.)
+- Add authors/books in LazyLibrarian's UI; finished files land in the folder
+  Audiobookshelf serves. (Music/books can't be requested from Seerr.)
 
 ### E. Seerr (http://localhost:5055) — the phone app
 - Sign in with **Plex** → it imports your Plex account and libraries.

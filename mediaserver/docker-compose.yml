@@ -134,3 +134,35 @@ services:
     # Lets Seerr reach Plex running natively on the Windows host.
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  # ── Books/audiobooks auto-grabber (the maintained replacement for the retired
+  #    Readarr). Follows authors, grabs via IPTorrents → qBittorrent into
+  #    /data/media/books. Optional. ──
+  lazylibrarian:
+    image: lscr.io/linuxserver/lazylibrarian:latest
+    container_name: lazylibrarian
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./config/lazylibrarian:/config
+      - ${DATA_DIR}:/data
+    ports:
+      - 5299:5299
+
+  # ── Audiobook + ebook SERVER/player (what Plex is bad at). Great phone apps.
+  #    Serves what's in /data/media/audiobooks and /data/media/books. Optional. ──
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./config/audiobookshelf:/config
+      - ./config/audiobookshelf-metadata:/metadata
+      - ${DATA_DIR}:/data
+    ports:
+      - 13378:80
