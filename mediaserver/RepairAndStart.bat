@@ -29,8 +29,11 @@ if errorlevel 1 (
 )
 
 cd /d C:\raspberrypi\mediaserver
-echo Starting the media stack...
-docker compose up -d
+echo Starting the media stack (rebuilding containers so drive mounts are fresh)...
+REM --force-recreate rebuilds every container. This is what actually fixes a
+REM stale "/data" mount - a plain "up -d" reuses the old container and keeps
+REM the broken mount.
+docker compose up -d --force-recreate
 
 echo Verifying the H: drive is mounted...
 docker compose exec -T radarr ls /data >nul 2>&1
