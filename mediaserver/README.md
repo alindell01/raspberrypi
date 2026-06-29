@@ -97,6 +97,35 @@ docker compose down        # stop everything
 
 ---
 
+## After you restart your PC
+
+In normal cases you don't have to do anything: Docker Desktop launches at login
+and every container has `restart: unless-stopped`, so the whole stack comes back
+on its own. Just wait a minute or two for Docker, then open the apps.
+
+To be sure Docker auto-starts: **Docker Desktop → Settings → General →
+"Start Docker Desktop when you sign in"** (checked).
+
+**Two helper scripts are in this folder:**
+
+- **`StartMediaStack.bat`** — double-click to start everything (starts Docker if
+  needed, waits for it, runs `docker compose up -d`). Optional: put a shortcut to
+  it in your Startup folder (`Win+R` → `shell:startup`) for a guaranteed start.
+- **`RepairAndStart.bat`** — run this **only** if an app won't load and you see
+  **"No such device"**, an **empty page** (`NS_ERROR_NET_EMPTY_RESPONSE`), or a
+  **drive-mount error**. Docker Desktop's WSL2 engine occasionally loses the H:
+  drive mount across restarts; this script fully resets the engine
+  (Quit Docker → `wsl --shutdown` → reopen Docker → `docker compose up -d`) which
+  clears the stale mount. The H: drive must be connected in Windows first.
+
+> The manual version of the repair, if you prefer typing it:
+> 1. Quit Docker Desktop (tray icon)
+> 2. `wsl --shutdown`
+> 3. Reopen Docker Desktop, wait for it to be running
+> 4. `docker compose up -d`
+
+---
+
 ## Configure the apps — do them in this order
 
 Each app's first screen will ask you to create a login. Then:
