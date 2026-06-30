@@ -30,28 +30,37 @@ Nothing here uses your friend's API keys — every app makes its own on first ru
 
 ## Drive layout (important — this is the whole trick)
 
-Everything the automation touches lives on the **4TB drive**, under one folder.
-That keeps downloads and finished media on the *same* volume, so Radarr/Sonarr
-import files **instantly** (a hardlink, not a slow copy) and you can keep seeding
-without storing the file twice.
+> ### ⚠️ The drive MUST be internal (SATA/NVMe), NOT USB
+> This is the single biggest gotcha. Docker Desktop's WSL2 engine **drops the
+> mount on USB drives under write load** — you'll get `No such device`, torrents
+> stuck **"Errored"**, and apps that won't keep `/data`. An **internal** drive is
+> completely stable. Your big **USB** drives are still great for the Plex
+> *library* (Plex reads them natively, no Docker mount involved) — just don't
+> point `DATA_DIR` at one. Check with: `Get-Disk | Select FriendlyName, BusType`.
 
-Create this on the 4TB drive (assuming it's `H:` — adjust to match):
+Everything the automation touches lives on **one internal drive**, under one
+folder. That keeps downloads and finished media on the *same* volume, so
+Radarr/Sonarr import files **instantly** (a hardlink, not a slow copy) and you
+can keep seeding without storing the file twice.
+
+Create this on your internal drive (example uses `G:` — adjust to match):
 
 ```
-H:\MediaStack\
+G:\MediaStack\
 ├── downloads\        ← qBittorrent saves here
 └── media\
     ├── movies\       ← Radarr's library  → add to Plex
-    └── tv\           ← Sonarr's library  → add to Plex
+    ├── tv\           ← Sonarr's library  → add to Plex
+    └── music\        ← Lidarr's library  → add to Plex
 ```
 
 Inside the containers this whole folder appears as `/data`, so:
 
 | You see (Windows) | Apps see (container) |
 |---|---|
-| `H:\MediaStack\downloads` | `/data/downloads` |
-| `H:\MediaStack\media\movies` | `/data/media/movies` |
-| `H:\MediaStack\media\tv` | `/data/media/tv` |
+| `G:\MediaStack\downloads` | `/data/downloads` |
+| `G:\MediaStack\media\movies` | `/data/media/movies` |
+| `G:\MediaStack\media\tv` | `/data/media/tv` |
 
 > Your two **existing** Plex drives are left completely alone. New downloads pile
 > up on the 4TB. When you want new stuff to also land on the old drives, see
