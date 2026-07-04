@@ -24,6 +24,7 @@ Nothing here uses your friend's API keys — every app makes its own on first ru
 | **LazyLibrarian** | http://localhost:5299 | Books/audiobooks auto-grabber (Readarr replacement). (Optional.) |
 | **Audiobookshelf** | http://localhost:13378 | Audiobook + ebook player, great phone apps. (Optional.) |
 | **Prowlarr** | http://localhost:9696 | Manages all your torrent indexers in one place. |
+| **FlareSolverr** | http://localhost:8191 | Solves Cloudflare for protected indexers (1337x, etc.). |
 | **qBittorrent** | http://localhost:18080 | The actual downloader (runs through your PIA VPN). |
 
 ---
@@ -216,6 +217,20 @@ Readarr is retired, so books split into two tools:
   way the \*arrs do — you give it the feed directly.)
 - Add authors/books in LazyLibrarian's UI; finished files land in the folder
   Audiobookshelf serves. (Music/books can't be requested from Seerr.)
+
+### D4. FlareSolverr — for Cloudflare-protected indexers (optional)
+
+Some public trackers (1337x, TorrentGalaxy) sit behind Cloudflare and won't work
+in Prowlarr without FlareSolverr. It's already in the compose; wire it in once:
+
+1. **Prowlarr → Settings → Indexer Proxies → Add (`+`) → FlareSolverr**
+   - **Host:** `http://flaresolverr:8191`
+   - **Tags:** add a tag, e.g. `flaresolverr`
+   - **Test → Save**
+2. On each Cloudflare-protected indexer (1337x, TorrentGalaxy) → edit it → add the
+   same **`flaresolverr`** tag → Save. Prowlarr now routes those through FlareSolverr.
+
+Indexers that DON'T need it: EZTV, Nyaa, The Pirate Bay.
 
 ### E. Seerr (http://localhost:5055) — the phone app
 - Sign in with **Plex** → it imports your Plex account and libraries.
