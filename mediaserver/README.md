@@ -116,6 +116,20 @@ on its own. Just wait a minute or two for Docker, then open the apps.
 To be sure Docker auto-starts: **Docker Desktop → Settings → General →
 "Start Docker Desktop when you sign in"** (checked).
 
+**Health check / self-heal:** `HealthCheck.ps1` checks every container (and
+whether its web UI actually answers, not just "container up") and restarts
+anything that's down, handling the gluetun→qBittorrent dependency:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\HealthCheck.ps1
+```
+It logs to `healthcheck.log`. If it reports the drive mount is lost, run
+`RepairAndStart.bat` — or run the health check with `-Repair` to auto-run the
+full reset. To run it automatically every 15 min, register a Scheduled Task:
+```powershell
+schtasks /Create /SC MINUTE /MO 15 /TN "MediaServer HealthCheck" ^
+  /TR "powershell -ExecutionPolicy Bypass -File C:\raspberrypi\mediaserver\HealthCheck.ps1" /F
+```
+
 **Two helper scripts are in this folder:**
 
 - **`StartMediaStack.bat`** — double-click to start everything (starts Docker if
