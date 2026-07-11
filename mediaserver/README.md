@@ -302,6 +302,33 @@ the other apps (and Plex) run normally.
 
 ---
 
+## Tuning quality: allow 4K with a size cap, and hand-pick releases
+
+**Allow 4K but cap the file size** (so you're not stuck with only 1080p, and not
+pulling 80 GB remuxes). In **Radarr** (same idea in Sonarr):
+- **Settings → Profiles → (your Quality Profile):** check the 2160p qualities you
+  want — **WEBDL-2160p, WEBRip-2160p, Bluray-2160p**. Leave **Bluray-2160p Remux**
+  off (those are the huge ones).
+- **Settings → Quality** (Quality Definitions): for the 2160p rows, set **Max** to
+  ~**300 MB/min** (≈ a 35 GB cap on a 2-hour movie; Radarr scales by runtime).
+  Adjust to taste. Leave 1080p rows at defaults.
+- Result: Radarr grabs 4K when it fits the cap, falls back to 1080p otherwise.
+
+**Hand-pick the torrent (with confirmation):**
+- Any time: open the movie in Radarr → **Interactive Search** (person + magnifier)
+  → pick by size / seeders / quality → click to grab. That click is your confirm.
+- To make *every* request wait for a manual pick: **Seerr → Settings → Services →
+  (your Radarr) → uncheck "Enable Automatic Search."** Requests then add the movie
+  to Radarr as monitored but don't auto-download until you Interactive Search.
+
+**Editing / redoing a request:**
+- A Seerr request is just a record + a trigger. Admins can edit some request
+  settings (server / quality profile / seasons) via the request's pencil icon, or
+  delete the request.
+- Deleting the Seerr request does **not** remove the movie from Radarr. To actually
+  change or re-grab the file, do it in Radarr (change the movie's quality profile,
+  or Interactive Search a different release — Radarr replaces the old file).
+
 ## Adding your other drives later
 
 When the 4TB fills up, or you want new movies on the old drives too:
