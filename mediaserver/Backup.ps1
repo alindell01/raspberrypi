@@ -33,9 +33,11 @@ if (-not $NoStop) {
   Pop-Location
 }
 
-# 2. The whole stack folder = compose + scripts + .env + config\ (all app data)
+# 2. The whole stack folder = compose + scripts + .env + config\ (all app data).
+#    Skip logs, caches, and the qBittorrent socket (not needed, and they lock/error).
 Write-Host "Copying the media-server stack (config, .env, scripts)..."
-robocopy $stackDir (Join-Path $target 'mediaserver') /E /R:1 /W:1 /NFL /NDL /NP
+robocopy $stackDir (Join-Path $target 'mediaserver') /E /R:0 /W:0 /NFL /NDL /NP `
+  /XF "ipc-socket" /XD "logs" "Cache"
 
 # 3. Optional: Plex library database + settings (your watch history, collections, etc.)
 if ($IncludePlex) {
