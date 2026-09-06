@@ -109,3 +109,10 @@ the USB drives was untouched.
    Radarr said *"No video files were found in the selected folder"* — likely a
    RAR-packed or fake release. Inspect the folder; if RAR/junk, blocklist it and
    Interactive Search a different release.
+6. **Finish LazyLibrarian**: installed but never fully configured, so book
+   grabbing doesn't work. Needs a downloader (`gluetun:8080`), processing
+   destinations under `/data/media`, and — the usual missing piece — a
+   **Torznab feed pasted in manually** (it does not use Prowlarr's Apps sync).
+   Step-by-step in **`LAZYLIBRARIAN.md`**. Low-effort alternative for
+   audiobooks: drop files into `G:\MediaStack\media\audiobooks\<Author>\<Title>\`
+   and let Audiobookshelf scan them.
