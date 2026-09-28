@@ -34,7 +34,8 @@
    - Re-add the **firewall** rule for the phone ports.
    - **Static IP / DHCP reservation** for the PC.
    - Install **Tailscale**, sign in, re-run `tailscale serve` for the HTTPS URL
-     (`https://desktop-4tl435v.tail513bc9.ts.net`).
+     (note: re-registering gives the PC a NEW tailnet IP — currently
+     `100.71.148.20` — and the `serve` mapping must be re-created).
    - (Optional) re-register the **HealthCheck** scheduled task.
    - Reinstall the **Claude Code** CLI (`npm install -g @anthropic-ai/claude-code`).
 7. **Plex:** reinstall Plex Media Server. To keep your library + history, stop Plex,

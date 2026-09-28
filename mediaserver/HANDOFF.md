@@ -73,9 +73,15 @@ Seerr → Prowlarr (indexers) → Radarr/Sonarr/Lidarr → qBittorrent (via PIA 
 
 ## Remote access
 
-- **Tailscale** on the PC + phone. HTTPS URL for Seerr:
-  `https://desktop-4tl435v.tail513bc9.ts.net` (tailnet-only, via `tailscale serve`).
-- LAN: `http://<pc-ip>:5055`. PC was `192.168.86.41` (wired, gateway 192.168.86.1,
+- **Tailscale** on the PC + phone. Tailscale IP is **`100.71.148.20`**
+  (re-registered after the SSD swap — it used to be 100.71.198.95, so any older
+  bookmark is stale). Apps are reachable at `http://100.71.148.20:<port>`.
+- The HTTPS name `https://desktop-4tl435v.tail513bc9.ts.net` only covers Seerr and
+  only while a `tailscale serve` mapping exists — that must be re-run after the
+  reinstall, and the machine name may have changed if the old node wasn't removed
+  from the tailnet. Verify with `tailscale status` / `tailscale serve status`.
+- LAN: `http://<pc-ip>:5055`. PC was `192.168.86.41` before the rebuild — re-check
+  with `ipconfig` (wired, gateway 192.168.86.1,
   Google/Nest WiFi — set a DHCP reservation so it stops moving).
 - Needs the Ethernet profile set to **Private** + a firewall rule allowing
   TCP 5055,13378,7878,8989,9696,8686,18080.
