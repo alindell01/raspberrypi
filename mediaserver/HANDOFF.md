@@ -9,7 +9,7 @@ A media automation stack on **Windows + Docker Desktop (WSL2)** feeding an
 Plex plays it.
 
 ```
-Seerr → Prowlarr (indexers) → Radarr/Sonarr/Lidarr → qBittorrent (via PIA VPN) → G:\MediaStack → Plex
+Seerr → Prowlarr (indexers) → Radarr/Sonarr/Lidarr → qBittorrent (via PIA VPN) → I:\MediaStack → Plex
 ```
 
 - Stack folder: **`C:\raspberrypi\mediaserver`**
@@ -33,11 +33,13 @@ Seerr → Prowlarr (indexers) → Radarr/Sonarr/Lidarr → qBittorrent (via PIA 
 
 ## Non-obvious rules — violating these caused most past breakage
 
-1. **`DATA_DIR` must point at an INTERNAL (SATA/NVMe) drive.** Currently
-   `DATA_DIR=G:/MediaStack` (internal 1TB WDC). USB drives drop the Docker/WSL2
-   mount under write load → `No such device`, torrents "Errored". The 5TB `H:`
-   is USB and must NOT be used for `DATA_DIR`. USB drives are fine as Plex
-   library storage (Plex reads them natively).
+1. **`DATA_DIR` is `I:/MediaStack` — on USB, by necessity.** Verified
+   2026-09-28 (see Drive map below). The library is ~2 TB; no internal drive
+   has room, so USB is the only option. **Do not move it to an internal drive.**
+   The known cost: USB can drop the Docker/WSL2 mount under write load
+   (`No such device`, errored torrents) → run `RepairAndStart.bat`.
+   Always read the live value (`Get-Content .env | Select-String DATA_DIR`)
+   rather than trusting a remembered letter.
 2. **Never `docker compose up -d --force-recreate <single-service>`** for a
    container that mounts the data drive. It wedges the WSL mount
    (`mkdir /run/desktop/mnt/host/h: file exists`) and can delete the container.
@@ -46,7 +48,7 @@ Seerr → Prowlarr (indexers) → Radarr/Sonarr/Lidarr → qBittorrent (via PIA 
 3. **The *arr apps reach qBittorrent at host `gluetun`, port `8080`** — not
    `qbittorrent`, not 18080 — because qBittorrent shares gluetun's network.
 4. **Container paths vs Windows paths.** Inside apps: `/data/media/movies`.
-   In Windows/Plex: `G:\MediaStack\media\movies`. `/data` == `G:\MediaStack`.
+   In Windows/Plex: `I:\MediaStack\media\movies`. `/data` == `I:\MediaStack`.
 5. **`http://prowlarr:9696` style names are for app-to-app fields only** — never
    in a browser. Browser always uses `localhost:<port>`.
 6. **Don't install a native Windows qBittorrent.** One was fighting the Docker
@@ -105,7 +107,7 @@ the USB drives was untouched.
    Plan is **Set location → Force recheck** on errored torrents so they resume
    seeding without re-downloading. Set location FIRST — rechecking against a
    wrong path marks them 0% and re-downloads. Files must live under
-   `G:\MediaStack\downloads` (qBittorrent can't see outside `/data`).
+   `I:\MediaStack\downloads` (qBittorrent can't see outside `/data`).
    Also: prefer **freeleech** on IPTorrents; public indexers (1337x etc., via
    FlareSolverr) have no ratio requirement.
 4. **Quality tuning (optional)**: allow 2160p in the Radarr/Sonarr quality
@@ -120,5 +122,47 @@ the USB drives was untouched.
    destinations under `/data/media`, and — the usual missing piece — a
    **Torznab feed pasted in manually** (it does not use Prowlarr's Apps sync).
    Step-by-step in **`LAZYLIBRARIAN.md`**. Low-effort alternative for
-   audiobooks: drop files into `G:\MediaStack\media\audiobooks\<Author>\<Title>\`
+   audiobooks: drop files into `I:\MediaStack\media\audiobooks\<Author>\<Title>\`
    and let Audiobookshelf scan them.
+
+
+---
+
+## Drive map — verified 2026-09-28
+
+After the SSD swap, **every large drive is USB**; the only internal drives are
+C: and D:, neither big enough for the library.
+
+| Letter | Bus | Label | Free | Role |
+|---|---|---|---|---|
+| C: | NVMe (internal) | — | 811 GB | Windows |
+| D: | SATA (internal) | — | 100 GB | — |
+| E: | USB | Boxofawesomeness2 | 459 GB | — |
+| F: | USB | Plex | 1781 GB | Plex library storage |
+| G: | USB | Data | 149 GB | empty |
+| H: | USB | Acer | 637 GB | old Windows install |
+| **I:** | **USB** | **boxofawesomeness** | **2650 GB** | **`DATA_DIR` — the live library** |
+
+Library on I: — movies 577 GB, tv 886 GB, music 76 GB, audiobooks 2.6 GB,
+downloads 800 GB (≈2.0 TB used, 2.6 TB free).
+
+**False alarm worth remembering:** `G:\MediaStack` looked empty and was mistaken
+for the live path, because the setup README uses `G:\MediaStack` as its *example*.
+The authoritative source is always `.env`, not the docs and not Explorer.
+
+## Pending manual cleanup
+
+Both verified byte-for-byte as duplicates/empty, safe to delete, but an agent's
+guardrails blocked removing drive-root folders — **delete these by hand**:
+
+- `C:\MediaStack` — 26.7 GB stale duplicate from a briefly mis-set `DATA_DIR`
+  during the reinstall; all content also exists on I:.
+- `G:\MediaStack` — empty folder.
+
+## Git is not attached on the PC
+
+`C:\raspberrypi\mediaserver` on the machine is **not a git repo** after the
+rebuild (files were restored from the backup copy, not cloned), so local doc
+edits are not versioned or pushed. Re-attach it to
+`github.com/alindell01/raspberrypi`, branch `claude/personal-media-server-yi9o8p`,
+**without overwriting local files** (fetch + mixed reset, then review and commit).
